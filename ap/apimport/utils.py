@@ -1,6 +1,5 @@
 import csv
 import requests
-import json
 import logging
 import os
 from datetime import date, datetime, time, timedelta
@@ -14,7 +13,7 @@ from django_countries import countries
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from accounts.models import Trainee, TrainingAssistant, User, UserMeta
+from accounts.models import TrainingAssistant, User, UserMeta
 from aputils.models import Address, City, Vehicle
 from houses.models import House
 from localities.models import Locality
@@ -24,6 +23,7 @@ from schedules.models import Schedule, Event
 from seating.models import Chart, Partial
 
 from aputils.trainee_utils import is_trainee
+from schedules.utils import split_schedule
 
 log = logging.getLogger("apimport")
 MONDAY, SATURDAY, SUNDAY = (0, 5, 6)
@@ -56,11 +56,12 @@ def term_start_date_from_semiannual(season, year):
   # return date of 19 weeks previous-- one week for semi-annual
   return datetime.combine(seed_date + timedelta(weeks=-19, days=0), time(0, 0))
 
+
 def term_end_date_from_semiannual(season, year):
   """ This returns the best-guess term start date for the given semi-annual.
     Input should follow the form of ("Winter"/"Summer", year) """
   start_date = term_start_date_from_semiannual(season, year)
-  # returns date 6 days after semi-annual starts
+  # returns 19 weeks + 5 days days after term starts
   return start_date + timedelta(weeks=19, days=5)
 
 
@@ -164,6 +165,7 @@ def currently_in_term(term_start, term_end):
 def mid_term():
   """ Returns true if we are still in the current term or if the current term hasn't yet
     started yet """
+  # return False  # TODO: Remove for production
   term = Term.current_term()
   if term:
     return term.currently_in_term()
@@ -253,7 +255,7 @@ def save_locality(city_name, state_id, country_code):
     city, created = City.objects.get_or_create(name=city_name, state=state_id, country=country_code)
   else:
     city, created = City.objects.get_or_create(name=city_name, country=country_code)
-  
+
   if created:
     log.info("Created city " + str(city) + ".")
 
@@ -502,7 +504,7 @@ def import_row(row):
   user.gender = row.get('gender', user.gender)
   user.lrhand = lrhand_code(row.get('LRHand'))  # TODO: This is prone to errors
   if row.get('birthDate') != "":
-    user.date_of_birth = datetime.strptime(row.get('birthDate'), "%m/%d/%Y %H:%M").date()
+    user.date_of_birth = datetime.strptime(row.get('birthDate'), "%m/%d/%y %H:%M").date()
   user.is_active = True
 
   term = Term.current_term()
@@ -535,13 +537,13 @@ def import_row(row):
   # TODO: This needs to be done better, once we get more information about localities
   locality = Locality.objects.filter(city__name=row['sendingLocality']).first()
   if locality:
-    user.locality.add(locality)
+    user.locality = locality
   else:
     # Try to find a city that corresponds
     city = City.objects.filter(name=row['sendingLocality']).first()
     if city:
       locality, created = Locality.objects.get_or_create(city=city)
-      user.locality.add(locality)
+      user.locality = locality
     else:
       log.warning("Unable to set locality [%s] for trainee: %s %s" % (row['sendingLocality'], row['stName'], row['lastName']))
 
@@ -626,21 +628,16 @@ def import_csvfile(file_path):
 
   log.info("Beginning CSV File Import")
 
-  # TODO(import2): Remove this
-  # count = 0;
   with open(file_path, 'r') as f:
     reader = csv.DictReader(f)
     for row in reader:
-      # count = count + 1
-      # if count > 10:
-      #     return
       import_row(row)
   term = Term.current_term()
+  week = term.term_week_of_date(datetime.today().date())
   schedules = Schedule.objects.filter(term=term)
 
-  # TODO(import2) -- this needs to be smarter eventually
   for schedule in schedules:
-      schedule.assign_trainees_to_schedule()
+      split_schedule(schedule, week, Schedule)
 
   log.info("Import complete")
   return True
@@ -690,7 +687,7 @@ def migrate_schedules():
   schedule_set.extend(schedules)
 
   for schedule in schedule_set:
-    s_new = migrate_schedule(schedule)
+    migrate_schedule(schedule)
 
 
 def migrate_seating_chart(chart, term):
@@ -699,7 +696,6 @@ def migrate_seating_chart(chart, term):
   chart.pk = None
   chart.term = term
   chart.save()
-  new_partition_arr = []
   for partition in partitions:
     partition.pk = None
     partition.chart = chart

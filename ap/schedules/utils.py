@@ -1,7 +1,5 @@
 import datetime
 
-# from schedules.models import Schedule
-
 
 def next_dow(d, day):
   while d.weekday() != day:
@@ -39,7 +37,7 @@ def should_split_schedule(schedule, week):
   return False
 
 
-def split_schedule(schedule, week):
+def split_schedule(schedule, week, sched_model):  # TODO: For some reason I can't import schedule.models
   """ If the schedule needs to split, returns a tuple of schedules--the parent schedule
     (which may or may not be the schedule that was passed in), the earlier split of the
     schedule, and the later split of the schedule.  Both of the splits will contain
@@ -59,12 +57,12 @@ def split_schedule(schedule, week):
       return schedule, None, schedule
 
   # clone
-  schedule_copy = Schedule.objects.get(pk=schedule.id)
+  schedule_copy = sched_model.objects.get(pk=schedule.id)
   s1 = schedule_copy
   s1.pk = None
   s1.save()
 
-  schedule_copy = Schedule.objects.get(pk=schedule.id)
+  schedule_copy = sched_model.objects.get(pk=schedule.id)
   s2 = schedule_copy
   s2.pk = None
   s2.save()

@@ -1,11 +1,8 @@
-from copy import deepcopy
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, timedelta
 from sets import Set
-from collections import OrderedDict
 
 from django.db import models
 from django.db.models import Q
-from django.core.urlresolvers import reverse
 from django.core.validators import validate_comma_separated_integer_list
 
 from terms.models import Term
@@ -14,7 +11,6 @@ from seating.models import Chart
 from aputils.models import QueryFilter
 from teams.models import Team
 
-from .utils import next_dow
 from aputils.utils import comma_separated_field_is_in_regex
 from aputils.eventutils import EventUtils
 
@@ -356,6 +352,7 @@ class Schedule(models.Model):
       return Trainee.objects.filter(**eval(self.query_filter.query))
 
   # TODO: Hailey will write a wiki to explain this function.
+  # TODO: This function is not used. See schedules.utils.split_schedule
   def assign_trainees_to_schedule(self):
     if self.is_locked:
       return
@@ -380,10 +377,9 @@ class Schedule(models.Model):
     else:
       week = term.term_week_of_date(datetime.today().date())
 
-    weeks = eval(self.weeks)
+    weeks_set = Set(eval(self.weeks))
 
-    # todo(import2): this doesn't work yet
-    if False:  # (len(Set(range(0, week + 1)).intersection(weeks_set))> 0):
+    if len(Set(range(0, week + 1)).intersection(weeks_set)) > 0:
       # Splitting
       s1 = Schedule(
           name=self.name,
@@ -416,8 +412,8 @@ class Schedule(models.Model):
         else:
           s2_weeks.append(x)
 
-      s1.weeks = str(s1_weeks)
-      s2.weeks = str(s2_weeks)
+      s1.weeks = ','.join(map(str, s1_weeks))
+      s2.weeks = ','.join(map(str, s1_weeks))
 
       s1.is_locked = True
 

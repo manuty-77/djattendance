@@ -11,7 +11,7 @@ class Command(BaseCommand):
   def _create_schedule(self):
 
     #all trainees
-    main_s = Schedule(name='Main', season='All', term=Term.current_term(), priority=1)
+    main_s = Schedule(name='Main', season='All', term=Term.current_term(), priority=1, import_to_next_term=True)
     main_s.save()
 
     main_s.events = Event.objects.filter(Q(type='H')|Q(type='M')|Q(class_type='MAIN'))
@@ -19,7 +19,7 @@ class Command(BaseCommand):
     main_s.save()
 
     #1st year    
-    oneyear_s = Schedule(name='1st Year', season='All', term=Term.current_term(), priority=2)
+    oneyear_s = Schedule(name='1st Year', season='All', term=Term.current_term(), priority=2, import_to_next_term=True)
     oneyear_s.save()
 
     oneyear_s.events = Event.objects.filter(class_type='1YR')
