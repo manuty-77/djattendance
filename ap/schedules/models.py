@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from sets import Set
 
 from django.db import models
 from django.db.models import Q
@@ -377,9 +376,9 @@ class Schedule(models.Model):
     else:
       week = term.term_week_of_date(datetime.today().date())
 
-    weeks_set = Set(eval(self.weeks))
+    weeks_set = set(eval(self.weeks))
 
-    if len(Set(range(0, week + 1)).intersection(weeks_set)) > 0:
+    if len(set(range(0, week + 1)).intersection(weeks_set)) > 0:
       # Splitting
       s1 = Schedule(
           name=self.name,
