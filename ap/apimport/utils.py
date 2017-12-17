@@ -23,7 +23,7 @@ from schedules.models import Schedule, Event
 from seating.models import Chart, Partial
 
 from aputils.trainee_utils import is_trainee
-from schedules.utils import split_schedule
+# from schedules.utils import split_schedule
 
 log = logging.getLogger("apimport")
 MONDAY, SATURDAY, SUNDAY = (0, 5, 6)
@@ -61,7 +61,8 @@ def term_end_date_from_semiannual(season, year):
   """ This returns the best-guess term start date for the given semi-annual.
     Input should follow the form of ("Winter"/"Summer", year) """
   start_date = term_start_date_from_semiannual(season, year)
-  # returns 19 weeks + 5 days days after term starts
+  # returns 19 weeks + 5 days after term starts
+  # i.e for start day Monday of week 0 return Saturday of week 19
   return start_date + timedelta(weeks=19, days=5)
 
 
@@ -537,13 +538,13 @@ def import_row(row):
   # TODO: This needs to be done better, once we get more information about localities
   locality = Locality.objects.filter(city__name=row['sendingLocality']).first()
   if locality:
-    user.locality = locality
+    user.locality.add(locality)
   else:
     # Try to find a city that corresponds
     city = City.objects.filter(name=row['sendingLocality']).first()
     if city:
       locality, created = Locality.objects.get_or_create(city=city)
-      user.locality = locality
+      user.locality.add(locality)
     else:
       log.warning("Unable to set locality [%s] for trainee: %s %s" % (row['sendingLocality'], row['stName'], row['lastName']))
 
@@ -568,6 +569,9 @@ def import_row(row):
 
   user.self_attendance = user.current_term > 2
   user.save()
+  schedules = Schedule.objects.filter(team_roll=user.team)
+  for schedule in schedules:
+    schedule.assign_trainees_to_schedule()
 
   # META
   try:
@@ -632,13 +636,6 @@ def import_csvfile(file_path):
     reader = csv.DictReader(f)
     for row in reader:
       import_row(row)
-  term = Term.current_term()
-  week = term.term_week_of_date(datetime.today().date())
-  schedules = Schedule.objects.filter(term=term)
-
-  for schedule in schedules:
-      split_schedule(schedule, week, Schedule)
-
   log.info("Import complete")
   return True
 

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Group
 
-from django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
 
 from .models import User, Trainee, TrainingAssistant, Locality
 
@@ -73,7 +73,7 @@ class TraineeAdminForm(forms.ModelForm):
     model = Trainee
     exclude = ['password']
     widgets = {
-      'locality': ModelSelect2Widget(
+      'locality': ModelSelect2MultipleWidget(
         queryset=Locality.objects.all(),
         required=False,
         search_fields=['city__icontains', 'state__icontains']
