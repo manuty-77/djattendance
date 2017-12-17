@@ -19,7 +19,7 @@ class Command(BaseCommand):
     main_s.save()
 
     # 1st year
-    oneyear_s = Schedule(name='1st Year', season='All', term=Term.current_term(), priority=2, import_to_next_term=True)
+    oneyear_s = Schedule(name='1st Year', season='All', trainee_select='FY', term=Term.current_term(), priority=2, import_to_next_term=True)
     oneyear_s.save()
 
     oneyear_s.events = Event.objects.filter(class_type='1YR')
@@ -27,7 +27,7 @@ class Command(BaseCommand):
     oneyear_s.save()
 
     # 2nd year
-    twoyear_s = Schedule(name='2nd Year', season='All', term=Term.current_term(), priority=2)
+    twoyear_s = Schedule(name='2nd Year', season='All', trainee_select='SY', term=Term.current_term(), priority=2)
     twoyear_s.save()
 
     twoyear_s.events = Event.objects.filter(class_type='2YR')
@@ -36,14 +36,10 @@ class Command(BaseCommand):
 
     # campus times
     for team in Team.objects.all():
-      query = '{"team__id":%s}' % team.id
-      qf = QueryFilter(name=team.name, query=query)
-      qf.save()
-
       schedule = Schedule(
           name=team.name, season='All', term=Term.current_term(),
-          priority=3, import_to_next_term=True, team_roll=team,
-          query_filter=qf
+          priority=3, import_to_next_term=True, trainee_select='TE',
+          team_roll=team
       )
       schedule.save()
       schedule.events = Event.objects.filter(monitor='TM')

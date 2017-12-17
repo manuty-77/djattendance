@@ -569,9 +569,6 @@ def import_row(row):
 
   user.self_attendance = user.current_term > 2
   user.save()
-  schedules = Schedule.objects.filter(team_roll=user.team)
-  for schedule in schedules:
-    schedule.assign_trainees_to_schedule()
 
   # META
   try:
@@ -636,6 +633,12 @@ def import_csvfile(file_path):
     reader = csv.DictReader(f)
     for row in reader:
       import_row(row)
+
+  # every team has one schedule
+  for team in Team.objects.all():
+    schedule = Schedule.objects.get(team_roll=team)
+    schedule.assign_trainees_to_schedule()
+
   log.info("Import complete")
   return True
 
