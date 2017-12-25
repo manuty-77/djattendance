@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group
 from accounts.models import Trainee, User
-from terms.models import Term
 from houses.models import House
 from teams.models import Team
+from terms.models import Term
 from apimport.utils import save_locality
 
 
@@ -21,6 +21,7 @@ def new_trainee(trainees=[], gen="B", ct=1):
     u.save()
     u.locality.add(loc)
     u.save()
+
 
 
 class Command(BaseCommand):
@@ -105,5 +106,6 @@ class Command(BaseCommand):
         t.save()
 
   def handle(self, *args, **options):
+    Trainee.objects.all().delete()
     print("* Populating trainees...")
     self._create_trainees()

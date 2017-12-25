@@ -10,15 +10,30 @@ from django.db.models import Q
 class Command(BaseCommand):
   def _create_schedule(self):
 
-    # all trainees
-    main_s = Schedule(name='Main', season='All', term=Term.current_term(), priority=1, import_to_next_term=True)
+    #Generic Schedule
+    group_s = Schedule(name='Generic Group Events', season='All', term=Term.current_term(), priority=1, trainee_select='GP', import_to_next_term=True)
+    group_s.comments = "Use for group leaveslips"
+    group_s.save()
+
+    group_s.events = Event.objects.filter(Q(type='H') | Q(type='M'))
+    events = ["SESS1", "SESS2", "CP Work", "YPCW", "GTF", "Study", "LANG/CHAR"]
+    for e in events:
+        es = Event.objects.filter(code=e)
+        group_s.events.add(*es)
+
+    group_s.trainees = Trainee.objects.all()
+    group_s.save()
+
+    #all trainees
+    main_s = Schedule(name='Main', season='All', term=Term.current_term(), priority=2, import_to_next_term=True)
     main_s.save()
 
-    main_s.events = Event.objects.filter(Q(type='H') | Q(type='M') | Q(class_type='MAIN'))
+    main_s.events = Event.objects.filter(Q(type='H')|Q(type='M')|Q(class_type='MAIN'))
+    main_s.events.add(*Event.objects.filter(code='LANG/CHAR'))
     main_s.trainees = Trainee.objects.all()
     main_s.save()
 
-    # 1st year
+    #1st year    
     oneyear_s = Schedule(name='1st Year', season='All', trainee_select='FY', term=Term.current_term(), priority=2, import_to_next_term=True)
     oneyear_s.save()
 
@@ -27,7 +42,7 @@ class Command(BaseCommand):
     oneyear_s.save()
 
     # 2nd year
-    twoyear_s = Schedule(name='2nd Year', season='All', trainee_select='SY', term=Term.current_term(), priority=2)
+    twoyear_s = Schedule(name='2nd Year', season='All', trainee_select='SY', term=Term.current_term(), priority=2, import_to_next_term=True)
     twoyear_s.save()
 
     twoyear_s.events = Event.objects.filter(class_type='2YR')
@@ -47,5 +62,6 @@ class Command(BaseCommand):
       schedule.save()
 
   def handle(self, *args, **options):
+    Schedule.objects.all().delete()
     print("* Populating schedules...")
     self._create_schedule()
