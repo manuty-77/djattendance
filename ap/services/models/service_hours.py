@@ -1,0 +1,37 @@
+from django.db import models
+
+from accounts.models import Trainee
+from service import Service
+from terms.models import Term
+
+""" SERVICE HOURS models.py
+
+Self-attendance for designated hours.
+
+Data Models:
+  - ServiceAttendance: a weekly record of service attendance
+  - ServiceRoll: individual service instance
+
+"""
+
+
+class ServiceAttendance(models.Model):
+
+  trainee = models.ForeignKey(Trainee, blank=True)
+
+  designated_service = models.ForeignKey(Service, blank=True)
+
+  term = models.ForeignKey(Term, blank=True)
+
+  week = models.IntegerField(default=0)
+
+
+class ServiceRoll(models.Model):
+
+  service_attendance = models.ForeignKey(ServiceAttendance, blank=True)
+
+  start_datetime = models.DateTimeField(null=True, blank=True)
+
+  end_datetime = models.DateTimeField(null=True, blank=True)
+
+  task_performed = models.CharField(max_length=140, blank=True)

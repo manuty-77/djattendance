@@ -10,9 +10,15 @@ from .models import (
     SeasonalServiceSchedule,
     GraphJson,
     Sum,
+    ServiceAttendance,
+    ServiceRoll,
     Exception
 )
+
+from .forms import ServiceRollForm
 from django.db.models import Q
+from django.views.generic.edit import UpdateView
+from braces.views import GroupRequiredMixin
 from datetime import datetime
 
 from graph import DirectedFlowGraph
@@ -44,7 +50,7 @@ from aputils.utils import timeit, timeit_inline, memoize
 from leaveslips.models import GroupSlip
 from accounts.models import Trainee
 from houses.models import House
-
+from terms.models import Term
 '''
 Pseudo-code for algo
 
@@ -884,6 +890,36 @@ class AssignmentPinViewSet(BulkModelViewSet):
 
   def allow_bulk_destroy(self, qs, filtered):
     return filtered
+
+
+class ServiceHours(GroupRequiredMixin, UpdateView):
+  model = ServiceRoll
+  template_name = 'service/service_hours.html'
+  form_class = ServiceRollForm
+  group_required = ['designated_service']
+  service = None
+  week = 0
+
+  def get_object(self, queryset=None):
+    term = Term.current_term()
+    self.week = 1  #term_week_of_date(datetime.now().date())
+    # get service
+    trainee = trainee_from_user(self.request.user)
+    designated_assignments = trainee.worker.assignment_set.all().filter(services__designated=True)
+    self.service = designated_assignments[0].service
+    # get the existing object or created a new one
+    service_attendance = ServiceAttendance.objects.get_or_create(trainee=self.request.user, term=term, week=self.week, designated_service=self.service)
+    service_roll, created = ServiceRoll.objects.get_or_create(service_attendance=service_attendance)
+    return service_roll
+
+  def get_context_data(self, **kwargs):
+    ctx = super(ServiceHours, self).get_context_data(**kwargs)
+    ctx['button_label'] = 'Submit'
+    ctx['page_title'] = 'Designated Service Hours'
+    ctx['service'] = self.service.name
+    ctx['week'] = self.week
+    # obj = self.get_object()
+    return ctx
 
 
 '''

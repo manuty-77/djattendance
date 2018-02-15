@@ -12,4 +12,5 @@ urlpatterns = [
   url(r'^generate_signinr$', views.generate_signin, {'r': True}, name='rservices_signin'),
   url(r'^generate_signink$', views.generate_signin, {'k': True}, name='kservices_signin'),
   url(r'^generate_signino$', views.generate_signin, {'o': True}, name='oservices_signin'),
+  url(r'^designated_service_hours$', views.ServiceHours.as_view(), name='services_schedule'),
 ]
