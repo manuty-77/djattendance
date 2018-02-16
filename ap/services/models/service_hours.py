@@ -13,17 +13,18 @@ Data Models:
   - ServiceRoll: individual service instance
 
 """
+CHOICES = [(i, i) for i in range(20)]
 
 
 class ServiceAttendance(models.Model):
 
   trainee = models.ForeignKey(Trainee, blank=True)
 
-  designated_service = models.ForeignKey(Service, blank=True)
+  designated_service = models.ForeignKey(Service)
 
   term = models.ForeignKey(Term, blank=True)
 
-  week = models.IntegerField(default=0)
+  week = models.IntegerField(default=0, choices=CHOICES)
 
 
 class ServiceRoll(models.Model):

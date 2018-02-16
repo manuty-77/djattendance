@@ -29,13 +29,6 @@
 
 $(document).ready(() => {
 
-  var service_key_val = {{service_key_val|safe}};
-  //clean week input
-  //clean designated_service input
-  //get service_id from designated_service
-  //got http://localhost:8000/services/designated_service_hours/<service_id>/<week>
-
-
   const size = 10;
 
   $("#add_row").click(() => {
@@ -48,7 +41,7 @@ $(document).ready(() => {
     } else {
       flashAjaxStatus();
     }
-  })
+  });
 
 
   $("#delete_row").click(() => {
@@ -58,7 +51,22 @@ $(document).ready(() => {
     }
   })
 
+  $("#id_designated_service, #id_week").on('change', update_form)
+
 });
+
+function update_form(){
+  let service_id = $("#id_designated_service").val();
+  let week = $("#id_week").val();
+  if(service_id.length < 1){
+    return;
+  } else if(parseInt(week) < 0){
+    return;
+  } else {
+    window.location.href = '/services/designated_service_hours/' + service_id + "/" + week;
+  }
+
+}
 
 </script>
 {% endblock %}

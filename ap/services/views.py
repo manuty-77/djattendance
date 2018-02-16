@@ -928,13 +928,10 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     ctx = super(ServiceHours, self).get_context_data(**kwargs)
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Designated Service Hours'
-    ctx['service'] = self.service.name
-    ctx['week'] = self.week
-    ctx['service_attendance_form'] = ServiceAttendanceForm(trainee=trainee_from_user(self.request.user))
-    service_key_val = {}
-    for a in self.designated_assignmnets:
-      service_key_val[a.service.name] = a.service.id
-    ctx['service_key_val'] = json.dumps(service_key_val)
+    ctx['service_attendance_form'] = ServiceAttendanceForm(
+        trainee=trainee_from_user(self.request.user),
+        initial={'designated_service': self.service, 'week': self.week}
+    )
     return ctx
 
 
