@@ -15,7 +15,7 @@ from .models import (
     Exception
 )
 
-from .forms import ServiceRollForm
+from .forms import ServiceRollForm, ServiceAttendanceForm
 from django.db.models import Q
 from django.views.generic.edit import UpdateView
 from braces.views import GroupRequiredMixin
@@ -894,7 +894,7 @@ class AssignmentPinViewSet(BulkModelViewSet):
 
 class ServiceHours(GroupRequiredMixin, UpdateView):
   model = ServiceRoll
-  template_name = 'service/service_hours.html'
+  template_name = 'services/service_hours.html'
   form_class = ServiceRollForm
   group_required = ['designated_service']
   service = None
@@ -902,13 +902,13 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
 
   def get_object(self, queryset=None):
     term = Term.current_term()
-    self.week = 1  #term_week_of_date(datetime.now().date())
+    self.week = 0  # term_week_of_date(datetime.now().date())
     # get service
     trainee = trainee_from_user(self.request.user)
-    designated_assignments = trainee.worker.assignment_set.all().filter(services__designated=True)
+    designated_assignments = trainee.worker.assignments.all().filter(service__designated=True)
     self.service = designated_assignments[0].service
     # get the existing object or created a new one
-    service_attendance = ServiceAttendance.objects.get_or_create(trainee=self.request.user, term=term, week=self.week, designated_service=self.service)
+    service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=self.request.user, term=term, week=self.week, designated_service=self.service)
     service_roll, created = ServiceRoll.objects.get_or_create(service_attendance=service_attendance)
     return service_roll
 
@@ -918,6 +918,7 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     ctx['page_title'] = 'Designated Service Hours'
     ctx['service'] = self.service.name
     ctx['week'] = self.week
+    ctx['service_attendance_form'] = ServiceAttendanceForm()
     # obj = self.get_object()
     return ctx
 

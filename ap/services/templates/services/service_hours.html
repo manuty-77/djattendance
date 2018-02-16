@@ -26,7 +26,7 @@
 
 <script type="text/javascript">
 $(document).ready(() => {
-  const size = $("#id_recommended_hc > option").length - 2;
+  const size = 10;
 
   $("#add_row").click(() => {
     let val = $("tr:last").attr('id').split("_").pop();
@@ -77,6 +77,9 @@ $(document).ready(() => {
 Also, posting hours again overwrites the old submission so you can post more than once.
 Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hours and no tasks performed will be deleted on save.</p>
 
+{% bootstrap_form service_attendance_form %}
+
+
 <b>Service:</b> {{service}} <br>
 <b>Week:</b> {{week}}
 
@@ -86,13 +89,13 @@ Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hou
   {% csrf_token %}
   <table class="table table-bordered" id="table">
     <tr>
-      <th>Name</th>
-      <th>Choice</th>
-      <th>Recommendation</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Task Performed</th>
     </tr>
     <tr id="row_0">
-      <td>{{form.start_datettime}}</td>
-      <td>{{{form.end_datettime}}</td>
+      <td>{{form.start_datetime}}</td>
+      <td>{{form.end_datetime}}</td>
       <td>{{form.task_performed}}</td>
     </tr>
     </table>

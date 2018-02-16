@@ -56,6 +56,7 @@ def generate_menu(context):
           SubMenuItem(name='Team Roll', permission='attendance.add_roll', url='attendance:team-rolls', condition=user.has_group(['attendance_monitors', 'team_monitors'])),
           SubMenuItem(name='YPC Roll', permission='attendance.add_roll', url='attendance:ypc-rolls', condition=user.has_group(['attendance_monitors', 'ypc_monitors'])),
           SubMenuItem(name='Audit', permission='attendance.add_roll', url='attendance:audit-rolls', condition=user.has_group(['attendance_monitors'])),
+          SubMenuItem(name='Designated Service Hours', permission='services.add_designated_service_hours', url='services:designated_service_hours', condition=user.has_group(['designated_service'])),
       ],
       common=[])
 

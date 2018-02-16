@@ -1,5 +1,5 @@
 from django import forms
-from services.models.service_hours import ServiceRoll
+from services.models.service_hours import ServiceRoll, ServiceAttendance
 from aputils.widgets import DatetimePicker
 
 
@@ -14,3 +14,12 @@ class ServiceRollForm(forms.ModelForm):
       "start_datetime": DatetimePicker(),
       "end_datetime": DatetimePicker(),
     }
+
+
+class ServiceAttendanceForm(forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super(ServiceAttendanceForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    model = ServiceAttendance
+    fields = ["designated_service", "week", ]
