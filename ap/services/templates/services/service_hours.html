@@ -29,6 +29,13 @@
 
 $(document).ready(() => {
 
+  var service_key_val = {{service_key_val|safe}};
+  //clean week input
+  //clean designated_service input
+  //get service_id from designated_service
+  //got http://localhost:8000/services/designated_service_hours/<service_id>/<week>
+
+
   const size = 10;
 
   $("#add_row").click(() => {
@@ -80,7 +87,8 @@ $(document).ready(() => {
 Also, posting hours again overwrites the old submission so you can post more than once.
 Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hours and no tasks performed will be deleted on save.</p>
 
-{% bootstrap_form service_attendance_form %}
+{% bootstrap_field service_attendance_form.designated_service %}
+{% bootstrap_field service_attendance_form.week %}
 
 
 <b>Service:</b> {{service}} <br>

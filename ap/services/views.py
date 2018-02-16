@@ -898,12 +898,14 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
   form_class = ServiceRollForm
   group_required = ['designated_service']
   service = None
+  designated_assignmnets = None
   service_id = 0  # from ajax
   week = 0  # from ajax
 
   def get_object(self, queryset=None):
     term = Term.current_term()
     trainee = trainee_from_user(self.request.user)
+    self.designated_assignmnets = trainee.worker.assignments.all().filter(service__designated=True)
     try:
       self.week = self.kwargs['week']
     except KeyError:
@@ -913,12 +915,12 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     try:
       self.service_id = self.kwargs['service_id']
     except KeyError:
-      self.service_id = trainee.worker.assignments.all().filter(service__designated=True)[0].service.id
+      self.service_id = self.designated_assignmnets[0].service.id
 
-    service = Service.objects.get(id=self.service_id)
+    self.service = Service.objects.get(id=self.service_id)
 
     # get the existing object or created a new one
-    service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=trainee, term=term, week=self.week, designated_service=service)
+    service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=trainee, term=term, week=self.week, designated_service=self.service)
     service_roll, created = ServiceRoll.objects.get_or_create(service_attendance=service_attendance)
     return service_roll
 
@@ -926,9 +928,13 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     ctx = super(ServiceHours, self).get_context_data(**kwargs)
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Designated Service Hours'
-    ctx['service'] = Service.objects.get(id=self.service_id).name
+    ctx['service'] = self.service.name
     ctx['week'] = self.week
     ctx['service_attendance_form'] = ServiceAttendanceForm(trainee=trainee_from_user(self.request.user))
+    service_key_val = {}
+    for a in self.designated_assignmnets:
+      service_key_val[a.service.name] = a.service.id
+    ctx['service_key_val'] = json.dumps(service_key_val)
     return ctx
 
 
