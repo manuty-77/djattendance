@@ -898,17 +898,27 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
   form_class = ServiceRollForm
   group_required = ['designated_service']
   service = None
-  week = 0
+  service_id = 0  # from ajax
+  week = 0  # from ajax
 
   def get_object(self, queryset=None):
     term = Term.current_term()
-    self.week = 0  # term_week_of_date(datetime.now().date())
-    # get service
     trainee = trainee_from_user(self.request.user)
-    designated_assignments = trainee.worker.assignments.all().filter(service__designated=True)
-    self.service = designated_assignments[0].service
+    try:
+      self.week = self.kwargs['week']
+    except KeyError:
+      self.week = self.week = term.term_week_of_date(datetime.now().date())
+
+    # get service
+    try:
+      self.service_id = self.kwargs['service_id']
+    except KeyError:
+      self.service_id = trainee.worker.assignments.all().filter(service__designated=True)[0].service.id
+
+    service = Service.objects.get(id=self.service_id)
+
     # get the existing object or created a new one
-    service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=self.request.user, term=term, week=self.week, designated_service=self.service)
+    service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=trainee, term=term, week=self.week, designated_service=service)
     service_roll, created = ServiceRoll.objects.get_or_create(service_attendance=service_attendance)
     return service_roll
 
@@ -916,10 +926,9 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     ctx = super(ServiceHours, self).get_context_data(**kwargs)
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Designated Service Hours'
-    ctx['service'] = self.service.name
+    ctx['service'] = Service.objects.get(id=self.service_id).name
     ctx['week'] = self.week
-    ctx['service_attendance_form'] = ServiceAttendanceForm()
-    # obj = self.get_object()
+    ctx['service_attendance_form'] = ServiceAttendanceForm(trainee=trainee_from_user(self.request.user))
     return ctx
 
 
