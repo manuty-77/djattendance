@@ -23,7 +23,7 @@ class Command(BaseCommand):
     serv, created = Service.objects.get_or_create(
         name="Attendance Project", code="AP", category=cat, designated=True, weekday=5, start=time(12, 30), end=time(16)
     )
-    # serv.worker_groups.add(wg)
+    wg = WorkerGroup.objects.get(name='Trainees')
     serv.schedule.add(sched)
     serv.save()
     sl, created = ServiceSlot.objects.get_or_create(name="Attendance Project", service=serv, worker_group=wg)
@@ -39,9 +39,9 @@ class Command(BaseCommand):
     serv2.save()
     sl2, created = ServiceSlot.objects.get_or_create(name="Meal Ushering", service=serv2, worker_group=wg)
     trainee2 = Trainee.objects.get(firstname="Bill")
-    assign, created = Assignment.objects.get_or_create(week_schedule=ws, service=serv2, service_slot=sl2)
-    assign.workers.add(trainee2.worker)
-    assign.save()
+    assign2, created = Assignment.objects.get_or_create(week_schedule=ws, service=serv2, service_slot=sl2)
+    assign2.workers.add(trainee2.worker)
+    assign2.save()
 
   def _create_attendance(self):
     t1 = Trainee.objects.get(lastname="Salamanca")
@@ -51,7 +51,7 @@ class Command(BaseCommand):
     term = Term.current_term()
 
     for x in range(2):
-      serv_att, created = ServiceAttendance.objects.get_or_create(worker=t1.worker, designated_service=serv1, week=0, term=term)
+      serv_att, created = ServiceAttendance.objects.get_or_create(worker=t1.worker, designated_service=serv1, week=x, term=term)
       for i in range(5):
         ServiceRoll.objects.get_or_create(
           service_attendance=serv_att, start_datetime=datetime(2018, 2, 14 + i, 13, 0, 0),
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         )
 
     for x in range(2):
-      serv_att, created = ServiceAttendance.objects.get_or_create(worker=t2.worker, designated_service=serv2, week=0, term=term)
+      serv_att, created = ServiceAttendance.objects.get_or_create(worker=t2.worker, designated_service=serv2, week=x, term=term)
       for i in range(5):
         ServiceRoll.objects.get_or_create(
           service_attendance=serv_att, start_datetime=datetime(2018, 2, 14 + i, 13, 0, 0),
