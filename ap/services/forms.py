@@ -25,6 +25,8 @@ class ServiceAttendanceForm(forms.ModelForm):
     for assignment in trainee.worker.assignments.all().filter(service__designated=True):
       service_ids.append(assignment.service.id)
     self.fields['designated_service'].queryset = Service.objects.filter(id__in=service_ids)
+    self.fields['designated_service'].required = False
+    self.fields['week'].required = False
 
   class Meta:
     model = ServiceAttendance

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+{% load common_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<h2>{{page_title}}</h2>
+<div>
+  {% for service in designated_services %}
+    <h3>{{service.name}}</h3>
+      
+    <table class="table table-bordered" id="id_service_table_{{service.id}}">
+      <thead>
+        <tr>
+          <th>Trainee</th>
+          <th>Attendance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for worker in service.workers %}
+        <tr>
+          <td>{{worker.full_name}}</td>
+          <td>
+            <table class="table table-bordered" id="id_worker_table_{{worker.id}}" name="{{worker.id}}">
+              <thead>
+                <tr>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Task Performed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for service_roll in worker.service_rolls %}
+                <tr>
+                  <td>{{service_roll.start_datetime}}</td>
+                  <td>{{service_roll.end_datetime}}</td>
+                  <td>{{service_roll.task_performed}}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -27,27 +27,33 @@
 
 <script type="text/javascript">
 
+
 $(document).ready(() => {
 
   const size = 10;
 
+  $('.datetimepicker').datetimepicker({
+    format:'m/d/Y H:i'
+  });
+
   $("#add_row").click(() => {
-    let val = $("tr:last").attr('id').split("_").pop();
+    let val = parseInt($("#id_service_hours_table tr:last").attr('id').split("_").pop());
 
     if (val < size) {
-      $("tr:last").clone().appendTo("#table");
+      $("#id_service_hours_table tr:last").clone().appendTo("#id_service_hours_table");
       val++;
-      $("tr:last").attr("id","row_" + val);
-    } else {
-      flashAjaxStatus();
+      $("#id_service_hours_table tr:last").attr("id","row_" + val);
+      $('.datetimepicker').datetimepicker({
+        format:'m/d/Y H:i'
+      });
     }
-  });
+  })
 
 
   $("#delete_row").click(() => {
-    let val = $("tr:last").attr('id').split("_").pop();
+    let val = parseInt($("#id_service_hours_table tr:last").attr('id').split("_").pop());
     if (val != 0){
-      $("tr:last").remove();
+      $("#id_service_hours_table tr:last").remove();
     }
   })
 
@@ -95,28 +101,26 @@ function update_form(){
 Also, posting hours again overwrites the old submission so you can post more than once.
 Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hours and no tasks performed will be deleted on save.</p>
 
-{% bootstrap_field service_attendance_form.designated_service %}
-{% bootstrap_field service_attendance_form.week %}
-
-
-<b>Service:</b> {{service}} <br>
-<b>Week:</b> {{week}}
 
 <br><br>
 
 <form id="id_service_hours_form" action="" method="post">
+  {% bootstrap_field form.designated_service %}
+  {% bootstrap_field form.week %}
   {% csrf_token %}
-  <table class="table table-bordered" id="table">
+  <table class="table table-bordered" id="id_service_hours_table">
     <tr>
       <th>Start</th>
       <th>End</th>
       <th>Task Performed</th>
     </tr>
-    <tr id="row_0">
-      <td>{{form.start_datetime}}</td>
-      <td>{{form.end_datetime}}</td>
-      <td>{{form.task_performed}}</td>
+    {% for service_roll_form in service_roll_forms %}
+    <tr id="row_{{forloop.counter0}}">
+      <td>{{service_roll_form.start_datetime}}</td>
+      <td>{{service_roll_form.end_datetime}}</td>
+      <td>{{service_roll_form.task_performed}}</td>
     </tr>
+    {% endfor %}
     </table>
 
     <button type="submit" class="btn btn-primary btn-save" id="submit">{{button_label|safe}}</button>

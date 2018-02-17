@@ -1,6 +1,7 @@
 from django.db import models
 
 from accounts.models import Trainee
+from worker import Worker
 from service import Service
 from terms.models import Term
 from django.core.urlresolvers import reverse
@@ -18,13 +19,16 @@ CHOICES = [(i, i) for i in range(20)]
 
 class ServiceAttendance(models.Model):
 
-  trainee = models.ForeignKey(Trainee, blank=True)
+  trainee = models.ForeignKey(Trainee, blank=True)  # change to worker
 
   designated_service = models.ForeignKey(Service)
 
   term = models.ForeignKey(Term, blank=True)
 
   week = models.IntegerField(default=0, choices=CHOICES)
+
+  def get_absolute_url(self):
+    return reverse('services:designated_service_hours', kwargs={'service_id': self.designated_service.id, 'week': self.week})
 
 
 class ServiceRoll(models.Model):
@@ -37,5 +41,3 @@ class ServiceRoll(models.Model):
 
   task_performed = models.CharField(max_length=140, blank=True)
 
-  def get_absolute_url(self):
-    return reverse('services:designated_service_hours', kwargs={'service_id': self.service_attendance.designated_service.id, 'week': self.service_attendance.week})

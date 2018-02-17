@@ -17,14 +17,17 @@ from .models import (
 
 from .forms import ServiceRollForm, ServiceAttendanceForm
 from django.db.models import Q
+from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
 from braces.views import GroupRequiredMixin
 from datetime import datetime
+from dateutil import parser
 
 from graph import DirectedFlowGraph
 
 from sets import Set
 from collections import OrderedDict
+from itertools import chain
 import random
 import json
 
@@ -33,6 +36,7 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Count
 from django.contrib import messages
+from django.core.serializers import serialize
 
 from rest_framework_bulk import (
     BulkModelViewSet,
@@ -893,9 +897,9 @@ class AssignmentPinViewSet(BulkModelViewSet):
 
 
 class ServiceHours(GroupRequiredMixin, UpdateView):
-  model = ServiceRoll
+  model = ServiceAttendance
   template_name = 'services/service_hours.html'
-  form_class = ServiceRollForm
+  form_class = ServiceAttendanceForm
   group_required = ['designated_service']
   service = None
   designated_assignmnets = None
@@ -921,18 +925,84 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
 
     # get the existing object or created a new one
     service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=trainee, term=term, week=self.week, designated_service=self.service)
-    service_roll, created = ServiceRoll.objects.get_or_create(service_attendance=service_attendance)
-    return service_roll
+    return service_attendance
+
+  def get_form_kwargs(self):
+    kwargs = super(ServiceHours, self).get_form_kwargs()
+    kwargs['trainee'] = trainee_from_user(self.request.user)
+    return kwargs
+
+  def form_valid(self, form):
+    self.update_service_roll(service_attendance=self.get_object(), data=self.request.POST.copy())
+    return super(ServiceHours, self).form_valid(form)
+
+  def update_service_roll(self, service_attendance, data):
+    start_list = data.pop('start_datetime')
+    end_list = data.pop('end_datetime')
+    task_list = data.pop('task_performed')
+    service_rolls = ServiceRoll.objects.filter(service_attendance=service_attendance)
+    index = 0
+
+    while index < service_rolls.count():
+      service_rolls[index].start_datetime = parser.parse(start_list[index])
+      service_rolls[index].end_datetime = parser.parse(end_list[index])
+      service_rolls[index].task_performed = task_list[index]
+      service_rolls[index].save()
+
+      index += 1
+
+    while index < len(start_list):
+      sr = ServiceRoll()
+      sr.service_attendance = service_attendance
+      sr.start_datetime = parser.parse(start_list[index])
+      sr.end_datetime = parser.parse(end_list[index])
+      sr.task_performed = task_list[index]
+      sr.save()
+
+      index += 1
 
   def get_context_data(self, **kwargs):
     ctx = super(ServiceHours, self).get_context_data(**kwargs)
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Designated Service Hours'
-    ctx['service_attendance_form'] = ServiceAttendanceForm(
-        trainee=trainee_from_user(self.request.user),
-        initial={'designated_service': self.service, 'week': self.week}
-    )
+    service_roll_forms = []
+    for sr in ServiceRoll.objects.filter(service_attendance=self.get_object()):
+      service_roll_forms.append(ServiceRollForm(instance=sr))
+    ctx['service_roll_forms'] = service_roll_forms
     return ctx
+
+
+class ServiceHoursTAView(TemplateView, GroupRequiredMixin):
+  template_name = 'services/service_hours_ta_view.html'
+  group_required = ['training_assistant']
+
+  def get_context_data(self, **kwargs):
+    context = super(ServiceHoursTAView, self).get_context_data(**kwargs)
+    term = Term.current_term()
+    week = 0  # week = self.term.term_week_of_date(datetime.now().date())
+
+    context['designated_services'] = self.get_services_dict(term, week)
+    context['page_title'] = "Service Hours Report"
+    return context
+
+  def get_services_dict(self, term, week):
+    services = []
+    for assign in Assignment.objects.filter(service__designated=True):
+      workers = []
+      for worker in assign.workers.all():
+          serv_att = worker.trainee.serviceattendance_set.get(term=term, week=week, designated_service=assign.service)
+          workers.append({
+            'full_name': worker.full_name,
+            'id': worker.trainee.id,
+            'service_attendance': serv_att.__dict__,
+            'service_rolls': serv_att.serviceroll_set.values()
+          })
+
+      services.append({
+        'name': assign.service.name,
+        'workers': workers
+      })
+    return services
 
 
 '''
