@@ -1,6 +1,5 @@
 from django.db import models
 
-from accounts.models import Trainee
 from worker import Worker
 from service import Service
 from terms.models import Term
@@ -19,7 +18,7 @@ CHOICES = [(i, i) for i in range(20)]
 
 class ServiceAttendance(models.Model):
 
-  trainee = models.ForeignKey(Trainee, blank=True)  # change to worker
+  worker = models.ForeignKey(Worker, blank=True)  # change to worker
 
   designated_service = models.ForeignKey(Service)
 
@@ -40,4 +39,3 @@ class ServiceRoll(models.Model):
   end_datetime = models.DateTimeField(null=True, blank=True)
 
   task_performed = models.CharField(max_length=140, blank=True)
-

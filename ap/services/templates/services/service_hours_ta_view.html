@@ -3,10 +3,35 @@
 {% load bootstrap3 %}
 {% load common_tags %}
 
+{% block scripts %}
+<script type="text/javascript">
+  $(document).ready(() => {
+    $("#id_week_select").on('change', update_form)
+  });
+  function update_form(){
+    let week = $("#id_week_select").val();
+    if(parseInt(week) < 0){
+      return;
+    } else {
+      window.location.href = '/services/service_hours_ta_view/' + week;
+    }
+
+  }
+</script>
+{% endblock scripts%}
+
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
 <h2>{{page_title}}</h2>
+<p>{{weekinit}}</p>
+<select id="id_week_select">
+{% for y in week_range %}
+    <option
+     value="{{ y }}" {% if y == weekinit %} selected="selected" {% endif %}
+    >{{ y }}</option>
+{% endfor %}
+</select>
 <div>
   {% for service in designated_services %}
     <h3>{{service.name}}</h3>
@@ -15,7 +40,7 @@
       <thead>
         <tr>
           <th>Trainee</th>
-          <th>Attendance</th>
+          <th>Service Hours</th>
         </tr>
       </thead>
       <tbody>

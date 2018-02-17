@@ -19,6 +19,7 @@ from .forms import ServiceRollForm, ServiceAttendanceForm
 from django.db.models import Q
 from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
+from django import forms
 from braces.views import GroupRequiredMixin
 from datetime import datetime
 from dateutil import parser
@@ -27,7 +28,6 @@ from graph import DirectedFlowGraph
 
 from sets import Set
 from collections import OrderedDict
-from itertools import chain
 import random
 import json
 
@@ -36,7 +36,6 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Count
 from django.contrib import messages
-from django.core.serializers import serialize
 
 from rest_framework_bulk import (
     BulkModelViewSet,
@@ -908,8 +907,8 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
 
   def get_object(self, queryset=None):
     term = Term.current_term()
-    trainee = trainee_from_user(self.request.user)
-    self.designated_assignmnets = trainee.worker.assignments.all().filter(service__designated=True)
+    worker = trainee_from_user(self.request.user).worker
+    self.designated_assignmnets = worker.assignments.all().filter(service__designated=True)
     try:
       self.week = self.kwargs['week']
     except KeyError:
@@ -924,12 +923,12 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     self.service = Service.objects.get(id=self.service_id)
 
     # get the existing object or created a new one
-    service_attendance, created = ServiceAttendance.objects.get_or_create(trainee=trainee, term=term, week=self.week, designated_service=self.service)
+    service_attendance, created = ServiceAttendance.objects.get_or_create(worker=worker, term=term, week=self.week, designated_service=self.service)
     return service_attendance
 
   def get_form_kwargs(self):
     kwargs = super(ServiceHours, self).get_form_kwargs()
-    kwargs['trainee'] = trainee_from_user(self.request.user)
+    kwargs['worker'] = trainee_from_user(self.request.user).worker
     return kwargs
 
   def form_valid(self, form):
@@ -966,8 +965,12 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Designated Service Hours'
     service_roll_forms = []
-    for sr in ServiceRoll.objects.filter(service_attendance=self.get_object()):
-      service_roll_forms.append(ServiceRollForm(instance=sr))
+    service_rolls = ServiceRoll.objects.filter(service_attendance=self.get_object())
+    if service_rolls.count() == 0:
+      service_roll_forms.append(ServiceRollForm())
+    else:
+      for sr in ServiceRoll.objects.filter(service_attendance=self.get_object()):
+        service_roll_forms.append(ServiceRollForm(instance=sr))
     ctx['service_roll_forms'] = service_roll_forms
     return ctx
 
@@ -979,9 +982,14 @@ class ServiceHoursTAView(TemplateView, GroupRequiredMixin):
   def get_context_data(self, **kwargs):
     context = super(ServiceHoursTAView, self).get_context_data(**kwargs)
     term = Term.current_term()
-    week = 0  # week = self.term.term_week_of_date(datetime.now().date())
-
+    week = 0
+    try:
+      week = self.kwargs['week']
+    except KeyError:
+      week = term.term_week_of_date(datetime.now().date())
     context['designated_services'] = self.get_services_dict(term, week)
+    context['week_range'] = [str(i) for i in range(20)]
+    context['weekinit'] = str(week)
     context['page_title'] = "Service Hours Report"
     return context
 
@@ -990,16 +998,19 @@ class ServiceHoursTAView(TemplateView, GroupRequiredMixin):
     for assign in Assignment.objects.filter(service__designated=True):
       workers = []
       for worker in assign.workers.all():
-          serv_att = worker.trainee.serviceattendance_set.get(term=term, week=week, designated_service=assign.service)
-          workers.append({
-            'full_name': worker.full_name,
-            'id': worker.trainee.id,
-            'service_attendance': serv_att.__dict__,
-            'service_rolls': serv_att.serviceroll_set.values()
-          })
-
+          try:
+            serv_att = worker.serviceattendance_set.get(term=term, week=week, designated_service=assign.service)
+            workers.append({
+              'full_name': worker.full_name,
+              'id': worker.id,
+              'service_attendance': serv_att.__dict__,
+              'service_rolls': serv_att.serviceroll_set.values()
+            })
+          except ServiceAttendance.DoesNotExist:
+            pass
       services.append({
         'name': assign.service.name,
+        'id': assign.service.id,
         'workers': workers
       })
     return services

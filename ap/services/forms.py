@@ -19,10 +19,10 @@ class ServiceRollForm(forms.ModelForm):
 
 class ServiceAttendanceForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
-    trainee = kwargs.pop('trainee')
+    worker = kwargs.pop('worker')
     super(ServiceAttendanceForm, self).__init__(*args, **kwargs)
     service_ids = []
-    for assignment in trainee.worker.assignments.all().filter(service__designated=True):
+    for assignment in worker.assignments.all().filter(service__designated=True):
       service_ids.append(assignment.service.id)
     self.fields['designated_service'].queryset = Service.objects.filter(id__in=service_ids)
     self.fields['designated_service'].required = False
