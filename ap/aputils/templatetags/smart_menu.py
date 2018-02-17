@@ -45,12 +45,12 @@ def generate_menu(context):
   attendance_menu = MenuItem(
       name='Attendance',
       ta_only=[
-          SubMenuItem(name='View Leaveslips', url='leaveslips:ta-leaveslip-list')
+          SubMenuItem(name='View Leave Slips', url='leaveslips:ta-leaveslip-list')
       ],
       trainee_only=[
           SubMenuItem(name='Personal Attendance', url='attendance:attendance-submit', condition=True),
-          SubMenuItem(name='Class & Study Roll', permission='attendance.add_roll', url='attendance:class-rolls', condition=user.has_group(['administration', 'attendance_monitors'])),
-          SubMenuItem(name='Meal Roll', permission='attendance.add_roll', url='attendance:meal-rolls', condition=user.has_group(['administration', 'attendance_monitors'])),
+          SubMenuItem(name='Class & Study Roll', permission='attendance.add_roll', url='attendance:class-rolls', condition=user.has_group(['training_assistant', 'attendance_monitors'])),
+          SubMenuItem(name='Meal Roll', permission='attendance.add_roll', url='attendance:meal-rolls', condition=user.has_group(['training_assistant', 'attendance_monitors'])),
           SubMenuItem(name='House Roll', permission='attendance.add_roll', url='attendance:house-rolls', condition=user.has_group(['attendance_monitors', 'HC'])),
           SubMenuItem(name='Class Table', permission='attendance.add_roll', url='attendance:class-table-rolls', condition=user.has_group(['attendance_monitors'])),
           SubMenuItem(name='Team Roll', permission='attendance.add_roll', url='attendance:team-rolls', condition=user.has_group(['attendance_monitors', 'team_monitors'])),
@@ -71,8 +71,8 @@ def generate_menu(context):
   exam_menu = MenuItem(
       name='Exams',
       ta_only=[
-          SubMenuItem(name='Create Exam', permission='exams.add_exam', url='exams:new', condition=user.has_group(['exam_graders', 'administration'])),
-          SubMenuItem(name='Manage Exams', permission='exams.add_exam', url='exams:manage', condition=user.has_group(['exam_graders', 'administration'])),
+          SubMenuItem(name='Create Exam', permission='exams.add_exam', url='exams:new', condition=user.has_group(['exam_graders', 'training_assistant'])),
+          SubMenuItem(name='Manage Exams', permission='exams.add_exam', url='exams:manage', condition=user.has_group(['exam_graders', 'training_assistant'])),
       ]
   )
 
@@ -80,15 +80,17 @@ def generate_menu(context):
       name='Requests',
       ta_only=[
           SubMenuItem(name='Room Reservation', url='room_reservations:ta-room-reservation-list'),
+          SubMenuItem(name='Audio', url='audio:ta-audio-home'),
       ],
       trainee_only=[
           SubMenuItem(name='Room Reservation', url='room_reservations:room-reservation-submit'),
+          SubMenuItem(name='Audio', url='audio:audio-home'),
       ],
       common=[
-          SubMenuItem(name='Audio', url='audio:audio-home'),
+          SubMenuItem(name='Announcements', url='announcements:announcement-request-list'),
           SubMenuItem(name='Web Access', url='web_access:web_access-list'),
           SubMenuItem(name='Maintenance', url='house_requests:maintenance-list'),
-          SubMenuItem(name='Linens', url='house_requests:linens-list'),
+          SubMenuItem(name='Linens', url='house_requests:linens-list', condition=user.has_group(['HC'])),
           SubMenuItem(name='Framing', url='house_requests:framing-list'),
       ]
   )
@@ -97,15 +99,14 @@ def generate_menu(context):
       name="Misc",
       common=[
           SubMenuItem(name='Bible Reading Tracker', url='bible_tracker:index'),
+          SubMenuItem(name='Lang/Char', url='classes:index'),
       ],
       ta_only=[
-          SubMenuItem(name='Create/Approve Announcements', url='announcements:announcement-request-list'),
-          SubMenuItem(name='View Announcements', url='announcements:announcement-list'),
-          SubMenuItem(name='HC Forms Admin', url='hc:hc-admin'),
-          SubMenuItem(name='Manage Custom Forms', url='fobi.dashboard')
+          SubMenuItem(name='Daily Announcements', url='announcements:announcement-list'),
+          # SubMenuItem(name='HC Forms Admin', url='hc:hc-admin'),
+          # SubMenuItem(name='Manage Custom Forms', url='fobi.dashboard')
       ],
       trainee_only=[
-          SubMenuItem(name='Create Announcements', url='announcements:announcement-request-list'),
           SubMenuItem(name='View Read Announcements', url='announcements:announcements-read'),
       ],
       specific=[
@@ -118,21 +119,20 @@ def generate_menu(context):
   )
 
   HC_menu = MenuItem(
-    name="HC",
-    trainee_only=[
-      SubMenuItem(name='HC Surveys', permission='hc.add_survey', url='hc:hc-survey', condition=user.has_group(['HC'])),
-      SubMenuItem(name='HC Recommendations', permission='hc.add_recommendation', url='hc:hc-recommendation', condition=user.has_group(['HC'])),
-      SubMenuItem(name='Absent Trainee Roster', permission='absent_trainee_roster.add_roster', url='absent_trainee_roster:absent_trainee_form', condition=user.has_group(['absent_trainee_roster'])),
-    ],
-    common=[]
-
+      name="HC",
+      trainee_only=[
+          SubMenuItem(name='HC Surveys', permission='hc.add_survey', url='hc:hc-survey', condition=user.has_group(['HC'])),
+          SubMenuItem(name='HC Recommendations', permission='hc.add_recommendation', url='hc:hc-recommendation', condition=user.has_group(['HC'])),
+          SubMenuItem(name='Absent Trainee Roster', permission='absent_trainee_roster.add_roster', url='absent_trainee_roster:absent_trainee_form', condition=user.has_group(['absent_trainee_roster'])),
+      ],
+      common=[]
   )
 
   grad_menu = MenuItem(
       name="Grad",
       common=[SubMenuItem(name=f.name, url=f.get_absolute_url()) for f in grad_forms(user)],
       specific=[
-        SubMenuItem(name='Grad Admin', permission='graduation.add_gradadmin', url='graduation:grad-admin', condition=user.has_group(['administration'])),
+          SubMenuItem(name='Grad Admin', permission='graduation.add_gradadmin', url='graduation:grad-admin', condition=user.has_group(['training_assistant'])),
       ]
   )
 
@@ -172,7 +172,7 @@ def generate_menu(context):
         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
           {0}
         </a><ul class="dropdown-menu"><li class="spacer"></li>""".format(menu_item.name)
-      for (path, name) in items:
+      for (path, name) in sorted(items, key=lambda i: i[1]):
         if name == '|':
           menu += "<li role=\"separator\" class=\"divider\"></li>"
         else:
