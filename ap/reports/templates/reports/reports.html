@@ -6,20 +6,27 @@
   <h2>Generate Attendance Reports </h2>
 <form action="" id="reportsForm" method="post" class="form-horizontal">
   <div class="reports-form-container">
-  	<div class="form-group right-push col-xs-3 col-sm-3 col-md-3 col-lg-3 Term">
+  	<div class="form-group right-push col-xs-2 col-sm-2 col-md-2 col-lg-2 Attendance Period Time Range">
+  		Time Range
+    	<p> Date from: <input type="text" name="date_from" class="datepicker"> </p>
+    	<p> Date to: <input type="text" name="date_to" class="datepicker"> </p>
+  	</div> 
+
+  	
+  	<div class="form-group right-push col-xs-2 col-sm-2 col-md-2 col-lg-2 Term">
   		Term
     	<li> 1st Term <input type="checkbox" value="Term 1" name="Term 1"> </li>
     	<li> 2nd Term <input type="checkbox" value="Term 2" name="Term 2"> </li>
     	<li> 3rd Term <input type="checkbox" value="Term 3" name="Term 3"> </li>
     	<li> 4th Term <input type="checkbox" value="Term 4" name="Term 4"> </li>
   	</div>  
-  	<div class="form-group right-push col-xs-3 col-sm-3 col-md-3 col-lg-3 Gender">
+  	<div class="form-group right-push col-xs-2 col-sm-2 col-md-2 col-lg-2 Gender">
   		Gender
     	<li> Male <input type="checkbox" value="Male" name="Male"> </li>
     	<li> Female <input type="checkbox" value="Female" name="Female"> </li>
   	</div> 
 
-		<div class="form-group right-push col-xs-3 col-sm-3 col-md-3 col-lg-3 General-Items">
+		<div class="form-group right-push col-xs-2 col-sm-2 col-md-2 col-lg-2 General-Items">
   		Columns for General Items
     	<li>Gender <input type="checkbox" value="Gender" name="Gender"></li>
     	<li>Term <input type="checkbox" value="Term" name="Term"></li>
@@ -28,19 +35,19 @@
     	<li>TA <input type="checkbox" value="TA" name="TA"></li>
   	</div>  
 
-  	<div class="form-group right-push col-xs-3 col-sm-3 col-md-3 col-lg-3 General-Report">
+  	<div class="form-group right-push col-xs-2 col-sm-2 col-md-2 col-lg-2 General-Report">
   		Columns for General Report
-    	<li>Excused Absences <input type="checkbox" value="Excused Absences" name="Excused Absences"></li>
-    	<li>Unexcused Absences <input type="checkbox" value="Unexcused Absences" name="Unexcused Absences"></li>
-   		<li>Total Absences <input type="checkbox" value="Total" name="Total Absences"></li>
-  		<li> Total Absences - Unexcused and Sickness <input type="checkbox" value="Total Absences - Unexcused and Sickness" name="Total Absences - Unexcused and Sickness"></li>
+    	<li>Absences - Excused<input type="checkbox" value="Absences - Excused" name="Absences - Excused"></li>
+    	<li>Absences - Unexcused <input type="checkbox" value="Absences - Unexcused" name="Absences - Unexcused"></li>
+   		<li>Absences - Total <input type="checkbox" value="Absences - Total" name="Absences - Total"></li>
+  		<li>Absences - Unexcused and Sickness <input type="checkbox" value="Absences - Unexcused and Sickness" name="Absences - Unexcused and Sickness"></li>
     <li>Tardies - Late <input type="checkbox" value="Tardies - Late" name="Tardies - Late"></li>
     <li>Tardies - Left Class <input type="checkbox" value="Tardies - Left Class" name="Tardies - Left Class"></li>
     <li>Tardies - Uniform <input type="checkbox" value="Tardies - Uniform" name="Tardies - Uniform"></li>
+    <li>Tardies - Total <input type="checkbox" value="Tardies - Total" name="Tardies - Total"></li>
     <li>Number of LS <input type="checkbox" value="Number of LS" name="Number of LS"></li>
     <li>Classes Missed <input type="checkbox" value="Classes Missed" name="Classes Missed"</li>
   	</div>  
-
 	</div>
 	<button id="report-submit-button" name="report-submit" class="btn btn-success">
     Generate Report
@@ -53,6 +60,10 @@
   <script>
   const SUCCESS_URL = "{{view.get_success_url}}";
 
+  $( function() {
+    $( ".datepicker" ).datepicker();
+  } );
+
   $(document).ready(function(e) {
 
     $("#reportsForm").on("click", '#report-submit-button', e => {
@@ -61,28 +72,34 @@
       const form_data = $('#reportsForm').serializeArray();
       //rtn_data = {SECTION_ID: {1:ANSWER1,2:ANSWER2,3:ANSWER3,...}, SECTION_ID: ...}
       let rtn_data = {};
-      let term = ''; //terms delimimted by ';' i.e. 1;2;3;4
-      let gender = '';
-      let general_items = ''
-      let general_report = '';
+      let term = ""; //terms delimimted by ';' i.e. 1;2;3;4
+      let gender = "";
+      let general_items = "";
+      let general_report = "";
+      let date_from = "";
+      let date_to = "";
 
       form_data.forEach((v, i) => {
       	if (v.name === "Term 1" || v.name === "Term 2" || v.name === "Term 3" || v.name === "Term 4") {
       		term = term + v.name + ';';
       	} else if (v.name === "Male" || v.name === "Female") {
-      		gender = gender + v.name + ';';
+      		gender = gender + v.name + ";";
       	} else if (v.name === "Gender") {
-      		general_items = general_items + 'gender;';
-      	} else if (v.name == "Term") {
-      		general_items = general_items + 'term;';
-      	} else if (v.name == "Sending Locality") {
-      		general_items = general_items + 'sending_locality;';	
-      	} else if (v.name == "TA") {
-      		general_items = general_items + 'ta;';
-      	} else if (v.name == "Team") {
-      		general_items = general_items + 'team;';
+      		general_items = general_items + "gender;";
+      	} else if (v.name === "Term") {
+      		general_items = general_items + "term;";
+      	} else if (v.name === "Sending Locality") {
+      		general_items = general_items + "sending_locality;";	
+      	} else if (v.name === "TA") {
+      		general_items = general_items + "ta;";
+      	} else if (v.name === "Team") {
+      		general_items = general_items + "team;";
+      	} else if (v.name === "date_from") {
+      		date_from = v.value;
+      	} else if (v.name === "date_to") {
+      		date_to = v.value;
       	} else {
-      		general_report = general_report + v.name + ';';
+      		general_report = general_report + v.name + ";";
       	}
       });
       term = term.replace(/;\s*$/, "");
@@ -93,12 +110,12 @@
       rtn_data['gender'] = gender;
       rtn_data['general_items'] = general_items;
       rtn_data['general_report'] = general_report;
-      debugger;
+      rtn_data['date_range'] = date_from + ";" + date_to;
 
       $.ajax({
         type: 'POST',
         url: window.location.pathname,
-        data: JSON.stringify(rtn_data),
+        data: rtn_data,
         success: function(data, status, jqXHR) {
           window.location = SUCCESS_URL || window.location;
         },
