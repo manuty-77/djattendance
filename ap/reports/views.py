@@ -20,19 +20,62 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
   success_url = reverse_lazy('reports:generate-reports')
   form_class = ReportGenerateForm
 
-  def is_excused(trainee, roll):
+  LS_TYPES = {
+      'CONF': 'Conference',
+      'EMERG': 'Family Emergency',
+      'FWSHP': 'Fellowship',
+      'FUNRL': 'Funeral',
+      'GOSP': 'Gospel',
+      'INTVW': 'Grad School/Job Interview',
+      'GRAD': 'Graduation',
+      'MEAL': 'Meal Out',
+      'NIGHT': 'Night Out',
+      'OTHER': 'Other',
+      'SERV': 'Service',
+      'SICK': 'Sickness',
+      'SPECL': 'Special',
+      'WED': 'Wedding',
+      'NOTIF': 'Notification Only',
+      'TTRIP': 'Team Trip',
+  }
+
+  def excused_status(self, trainee, roll):
     '''
-    Checks if a roll in where the trainee is absent or tardy has been excused or not.
+    Checks if a roll in where the trainee is absent or tardy has been excused or not,
+    and return the type if excused. Naming convention of returned string should match the item to query in report.
     '''
     individual_slips = IndividualSlip.objects.filter(trainee=trainee, rolls=roll)
     if len(individual_slips) > 0:
-      return individual_slips[0].status == 'A' or individual_slips[0].status == 'S'
+      if individual_slips[0].status == 'P' or individual_slips[0].status == 'F' or individual_slips[0].status == 'D':
+        if roll.status == 'A':
+          return 'Absences - Unexcused'
+        elif roll.status == 'T' or roll.status == 'U' or roll.status == 'L':
+           return 'Tardies - Unexcused'
+      else:
+        if roll.status == 'A':
+          return "Absences - Excused - " + ReportCreateView.LS_TYPES[individual_slips[0].type]
+        elif roll.status == 'T' or roll.status == 'U' or roll.status == 'L':
+          return 'Tardies - Excused'
     
     #get group slips related to the trainee and event of the roll in question, and make sure the group_slip is for the right date
-    group_slips = GroupSlip.objects.filter(trainees=trainee, events=roll.event, start__range=[roll.date, roll.date+timedelta(days=1)])
-
-
-    return False
+    group_slips = GroupSlip.objects.filter(trainees=trainee, start__range=[roll.date, roll.date+timedelta(days=1)])
+    for group_slip in group_slips:
+      if roll.event in group_slip.events:
+        if len(group_slips) > 0:
+          if group_slips[0].status == 'P' or group_slips[0].status == 'F' or group_slips[0].status == 'D':
+            if roll.status == 'A':
+              return 'Absences - Unexcused'
+            elif roll.status == 'T' or roll.status == 'U' or roll.status == 'L':
+              return 'Tardies - Unexcused'
+          else:
+            if roll.status == 'A':
+              return "Absences - Excused - " + ReportCreateView.LS_TYPES[group_slips[0].type]
+            elif roll.status == 'T' or roll.status == 'U' or roll.status == 'L':
+              return 'Tardies - Excused'
+    if roll.status == 'A':
+      return 'Absences - Unexcused'
+    elif roll.status == 'T' or roll.status == 'U' or roll.status == 'L':
+      return 'Tardies - Unexcused'
 
   def post(self, request, *args, **kwargs):
     data = dict(request.POST.iterlists())
@@ -65,8 +108,8 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
       filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
 
     filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list)
-    print "*************** FILTERED ROLLS ***************"
-    print str(filtered_rolls)
+    #print "*************** FILTERED ROLLS ***************"
+    #print str(filtered_rolls)
 
     items_for_query = data['general_report'][0].split(';')
 
@@ -81,13 +124,17 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     for roll in filtered_rolls:
       #print "roll date: " + str(roll.date)
+      #print "roll status: " + str(roll.status)
       if roll.trainee.full_name not in rtn_data:
         rtn_data[roll.trainee.full_name] = {}
-      if roll.status == 'P':
-        if not 'Present' in rtn_data[roll.trainee.full_name]:
-          rtn_data[roll.trainee.full_name]['Present'] = 1
-        else:
-          rtn_data[roll.trainee.full_name]['Present'] += 1
+        for item in items_for_query:
+          rtn_data[roll.trainee.full_name][item] = 0
+      #if roll.status == 'P':
+      #  if not 'Present' in rtn_data[roll.trainee.full_name]:
+      #    rtn_data[roll.trainee.full_name]['Present'] = 1
+      #  else:
+      #    rtn_data[roll.trainee.full_name]['Present'] += 1
+      
       #logic for each 'elif' is check if item for report is present in dictionary...
       #if not, create the item for report for the trainee
       #but check to make sure it's an item to report
@@ -96,6 +143,15 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
           rtn_data[roll.trainee.full_name]['Absences - Total'] = 1
         elif 'Absences - Total' in items_for_query:
           rtn_data[roll.trainee.full_name]['Absences - Total'] += 1
+        status_of_roll = self.excused_status(roll.trainee, roll)
+        if not status_of_roll in rtn_data[roll.trainee.full_name] and status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] = 1
+        elif status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] += 1
+        if not 'Absences - Excused' in rtn_data[roll.trainee.full_name] and 'Absences - Excused' in items_for_query and 'Absences - Excused' in status_of_roll:
+          rtn_data[roll.trainee.full_name]['Absences - Excused'] = 1
+        elif 'Absences - Excused' in items_for_query and 'Absences - Excused' in status_of_roll:
+          rtn_data[roll.trainee.full_name]['Absences - Excused'] += 1
       #for tardy rolls add to total tardy count as well as type of tardy count
       elif roll.status == 'T':
         if not 'Tardies - Total' in rtn_data[roll.trainee.full_name] and 'Tardies - Total' in items_for_query:
@@ -106,6 +162,11 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
           rtn_data[roll.trainee.full_name]['Tardies - Late'] = 1
         elif 'Tardies - Late' in items_for_query:
           rtn_data[roll.trainee.full_name]['Tardies - Late'] += 1
+        status_of_roll = self.excused_status(roll.trainee, roll)
+        if not status_of_roll in rtn_data[roll.trainee.full_name] and status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] = 1
+        elif status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] += 1
       elif roll.status == 'U':
         if not 'Tardies - Total' in rtn_data[roll.trainee.full_name] and 'Tardies - Total' in items_for_query:
           rtn_data[roll.trainee.full_name]['Tardies - Total'] = 1
@@ -115,6 +176,11 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
           rtn_data[roll.trainee.full_name]['Tardies - Uniform'] = 1
         elif 'Tardies - Uniform' in items_for_query:
           rtn_data[roll.trainee.full_name]['Tardies - Uniform'] += 1
+        status_of_roll = self.excused_status(roll.trainee, roll)
+        if not status_of_roll in rtn_data[roll.trainee.full_name] and status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] = 1
+        elif status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] += 1
       elif roll.status == 'L':
         if not 'Tardies - Total' in rtn_data[roll.trainee.full_name] and 'Tardies - Total' in items_for_query:
           rtn_data[roll.trainee.full_name]['Tardies - Total'] = 1
@@ -124,6 +190,11 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
           rtn_data[roll.trainee.full_name]['Tardies - Left Class'] = 1
         elif 'Tardies - Left Class' in items_for_query:
           rtn_data[roll.trainee.full_name]['Tardies - Left Class'] += 1
+        status_of_roll = self.excused_status(roll.trainee, roll)
+        if not status_of_roll in rtn_data[roll.trainee.full_name] and status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] = 1
+        elif status_of_roll in items_for_query:
+          rtn_data[roll.trainee.full_name][status_of_roll] += 1
 
     """
     for item in items_for_query:
