@@ -7,6 +7,7 @@ from django.shortcuts import render
 from .forms import ReportGenerateForm
 from datetime import date, timedelta, datetime
 from django.utils import timezone
+from django.http import JsonResponse
 
 from accounts.models import Trainee
 from terms.models import Term
@@ -80,7 +81,7 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
   def post(self, request, *args, **kwargs):
     data = dict(request.POST.iterlists())
     rtn_data = dict() #{TRAINEE_NAME: {Absences - Total: 10, Tardies - Total: 5, ...}, TRAINEE_NAME: ...}
-
+    print str(data)
     date_from = datetime.strptime(data['date_range'][0].split(';')[0], '%m/%d/%Y')
     date_to = datetime.strptime(data['date_range'][0].split(';')[1], '%m/%d/%Y')
     delta = date_to - date_from
@@ -108,23 +109,10 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
       filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
 
     filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list)
-    #print "*************** FILTERED ROLLS ***************"
-    #print str(filtered_rolls)
 
     items_for_query = data['general_report'][0].split(';')
 
-    #IndividualSlip.objects.all().filter(rolls=Roll.objects.all()[20])
-
-    #'Present'
-    #'Absent'
-    #'Tardy'
-    #'Uniform'
-    #'Left Class'
-
-
     for roll in filtered_rolls:
-      #print "roll date: " + str(roll.date)
-      #print "roll status: " + str(roll.status)
       if roll.trainee.full_name not in rtn_data:
         rtn_data[roll.trainee.full_name] = {}
         for item in items_for_query:
@@ -152,6 +140,10 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
           rtn_data[roll.trainee.full_name]['Absences - Excused'] = 1
         elif 'Absences - Excused' in items_for_query and 'Absences - Excused' in status_of_roll:
           rtn_data[roll.trainee.full_name]['Absences - Excused'] += 1
+        if not 'Absences - Unexcused and Sickness' in rtn_data[roll.trainee.full_name] and 'Absences - Unexcused and Sickness' in items_for_query and ('Absences - Unexcused' in status_of_roll or 'Absences - Excused - Sickness' in status_of_roll):
+          rtn_data[roll.trainee.full_name]['Absences - Unexcused and Sickness'] = 1
+        elif 'Absences - Unexcused and Sickness' in items_for_query and ('Absences - Unexcused' in status_of_roll or 'Absences - Excused - Sickness' in status_of_roll):
+          rtn_data[roll.trainee.full_name]['Absences - Unexcused and Sickness'] += 1
       #for tardy rolls add to total tardy count as well as type of tardy count
       elif roll.status == 'T':
         if not 'Tardies - Total' in rtn_data[roll.trainee.full_name] and 'Tardies - Total' in items_for_query:
@@ -228,7 +220,11 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     #based on data, filter all the relevant data for the report
 
-    return render(request, 'reports/reports.html', {'data': rtn_data})
+    #return render(request, 'reports/reports.html', context={'data': rtn_data})
+    return render(request, "reports/reports.html", context={'data': rtn_data})
+
+
+    #return JsonResponse(rtn_data)
 
 
 class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):

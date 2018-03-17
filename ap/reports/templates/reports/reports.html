@@ -4,6 +4,24 @@
 
 {% block content %}
 
+	<div id="generatedReport">
+  
+    
+  </div>
+
+	{{ data }}
+	{% if data %}
+		<h2> Generated Report</h2>
+		<table>
+		{% for key in data.items %}
+   		<tr>
+        <th> {{ key }} </th>
+        
+   		</tr>
+		{% endfor %}
+		</table>
+	{% endif %}
+
   <h2>Generate Attendance Reports </h2>
 <form action="" id="reportsForm" method="post" class="form-horizontal">
   <div class="reports-form-container">
@@ -134,7 +152,20 @@
         url: window.location.pathname,
         data: rtn_data,
         success: function(data, status, jqXHR) {
-          window.location = SUCCESS_URL || window.location;
+        	console.log('****************************************');
+        	console.log(data);
+        	console.log('****************************************');
+        	//var div = document.getElementById('generatedReport');
+        	//for (var x = 0; x < data.length; x++) {
+        		//div.innerHTML += data[x];
+            //div.innerHTML += "<br>";
+            
+            //$(content).appendTo("#generatedReport");
+        	//}
+        	//$("#generatedReport").html(data);
+        	//window.location = SUCCESS_URL || window.location;
+          // window.location = SUCCESS_URL || window.location;
+
         },
         error: function (jqXHR, textStatus, errorThrown ) {
           alert('Error thrown is: ' + errorThrown + '; ' + textStatus);
