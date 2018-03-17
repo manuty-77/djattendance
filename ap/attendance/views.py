@@ -18,6 +18,8 @@ from leaveslips.models import IndividualSlip, GroupSlip
 from terms.models import Term
 from accounts.models import Trainee, TrainingAssistant
 from seating.models import Chart, Seat, Partial
+from houses.models import House
+from teams.models import Team
 from rest_framework_bulk import (
     BulkModelViewSet
 )
@@ -44,7 +46,7 @@ def react_attendance_context(trainee):
   rolls = Roll.objects.filter(trainee=trainee)
   individualslips = IndividualSlip.objects.filter(trainee=trainee)
   groupslips = GroupSlip.objects.filter(Q(trainees__in=[trainee])).distinct()
-  TAs = TrainingAssistant.objects.all()
+  TAs = TrainingAssistant.objects.filter(groups__name = 'training_assistant')
   term = [Term.current_term()]
   ctx = {
       'events_bb': listJSONRenderer.render(AttendanceEventWithDateSerializer(events, many=True).data),
@@ -75,6 +77,8 @@ class AttendancePersonal(AttendanceView):
     ctx = super(AttendancePersonal, self).get_context_data(**kwargs)
     user = self.request.user
     trainee = trainee_from_user(user)
+    if not trainee:
+      trainee = Trainee.objects.filter(groups__name='attendance_monitors').first()
     ctx.update(react_attendance_context(trainee))
     return ctx
 
@@ -282,10 +286,24 @@ class TableRollsView(GroupRequiredMixin, AttendanceView):
   def get_context_data(self, **kwargs):
     ctx = super(TableRollsView, self).get_context_data(**kwargs)
 
+    trainees = kwargs['trainees']
+
     current_term = Term.current_term()
+    ctx['house'] = self.request.user.house
+    ctx['team'] = self.request.user.team
     if self.request.method == 'POST':
       selected_week = int(self.request.POST.get('week'))
       selected_date = current_term.startdate_of_week(selected_week)
+
+      house = self.request.POST.get('house')
+      if house:
+        trainees = Trainee.objects.filter(house__name=house)
+        ctx['house'] = house
+      team = self.request.POST.get('team')
+      if team:
+        trainees = Trainee.objects.filter(team__name=team)
+        ctx['team'] = team
+
     else:
       selected_date = date.today()
     current_week = current_term.term_week_of_date(selected_date)
@@ -294,8 +312,12 @@ class TableRollsView(GroupRequiredMixin, AttendanceView):
     start_datetime = datetime.combine(start_date, time())
     end_datetime = datetime.combine(end_date, time())
 
-    trainees = kwargs['trainees']
     event_type = kwargs['type']
+    if event_type == "H":
+      ctx['houses'] = House.objects.filter(used=True).order_by("name").exclude(name__in=['TC', 'MCC', 'COMMUTER'])
+    elif event_type == "T":
+      ctx['teams'] = Team.objects.all().order_by("type", "name").values("pk", "name")
+
     event_list, trainee_evt_list = Schedule.get_roll_table_by_type_in_weeks(trainees, event_type, [current_week, ])
     rolls = Roll.objects.filter(event__in=event_list, date__gte=start_date, date__lte=end_date).select_related('trainee', 'event')
     group_slip = GroupSlip.objects.filter(end__gte=start_datetime, start__lte=end_datetime, status='A').order_by('start', 'end').prefetch_related('trainees')
@@ -362,6 +384,7 @@ class TableRollsView(GroupRequiredMixin, AttendanceView):
     ctx['trainees_event_list'] = trainee_evt_list
     ctx['event_list'] = event_list
     ctx['event_groupslip_tbl'] = event_groupslip_tbl
+    ctx['week'] = Term.current_term().term_week_of_date(date.today())
     return ctx
 
 
@@ -378,11 +401,19 @@ class ClassRollsView(TableRollsView):
 # Meal Rolls
 class MealRollsView(TableRollsView):
   def get_context_data(self, **kwargs):
-    # We get all 1st year trainees and 2nd year that are under audit
     kwargs['trainees'] = Trainee.objects.all()
     kwargs['type'] = 'M'
     ctx = super(MealRollsView, self).get_context_data(**kwargs)
     ctx['title'] = "Meal Rolls"
+    return ctx
+
+# Study Rolls
+class StudyRollsView(TableRollsView):
+  def get_context_data(self, **kwargs):
+    kwargs['trainees'] = Trainee.objects.all()
+    kwargs['type'] = 'S'
+    ctx = super(StudyRollsView, self).get_context_data(**kwargs)
+    ctx['title'] = "Study Rolls"
     return ctx
 
 
@@ -436,7 +467,7 @@ class YPCRollsView(TableRollsView):
     if trainee.has_group(['attendance_monitors']):
       kwargs['trainees'] = Trainee.objects.all()
     else:
-      kwargs['trainees'] = Trainee.objects.filter(Q(self_attendance=False, current_term__gt=2) | Q(current_term__lte=2))
+      kwargs['trainees'] = Trainee.objects.filter(team__type__in=['YP', 'CHILD']).filter(Q(self_attendance=False, current_term__gt=2) | Q(current_term__lte=2))
     kwargs['type'] = 'Y'
     ctx = super(YPCRollsView, self).get_context_data(**kwargs)
     ctx['title'] = "YPC Rolls"
@@ -503,15 +534,15 @@ def finalize(request):
   period_end = dateutil.parser.parse(data['weekEnd'])
   rolls_this_week = trainee.rolls.filter(date__gte=period_start, date__lte=period_end)
   if rolls_this_week.exists():
-      rolls_this_week.update(finalized=True)
+    rolls_this_week.update(finalized=True)
   else:
-      # we need some way to differentiate between those who have finalized and who haven't if they have no rolls
-      # add a dummy finalized present roll for this case
-      event = trainee.events[0] if trainee.events else (Event.objects.first() if Event.objects else None)
-      if not event:
-          return HttpResponseServerError('No events found')
-      roll = Roll(date=period_start, trainee=trainee, status='P', event=event, finalized=True, submitted_by=submitter)
-      roll.save()
+    # we need some way to differentiate between those who have finalized and who haven't if they have no rolls
+    # add a dummy finalized present roll for this case
+    event = trainee.events[0] if trainee.events else (Event.objects.first() if Event.objects else None)
+    if not event:
+      return HttpResponseServerError('No events found')
+    roll = Roll(date=period_start, trainee=trainee, status='P', event=event, finalized=True, submitted_by=submitter)
+    roll.save()
   listJSONRenderer = JSONRenderer()
   rolls = listJSONRenderer.render(RollSerializer(Roll.objects.filter(trainee=trainee), many=True).data)
 

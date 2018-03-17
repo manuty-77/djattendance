@@ -38,7 +38,6 @@ def generate_cards(context):
 
     web_access_count = WebRequest.objects.filter(status='P', trainee__in=my_trainees).count()
     av_count = AudioRequest.objects.filter(status='P', trainee_author__in=my_trainees).count()
-    house_count = MaintenanceRequest.objects.filter(status='P', trainee_author__in=my_trainees).count()+FramingRequest.objects.filter(status='P', trainee_author__in=my_trainees).count()+LinensRequest.objects.filter(status='P', trainee_author__in=my_trainees).count()
 
     my_trainees = User.objects.filter(TA=user)
     room_reservation_count = RoomReservation.objects.filter(status='P', requester__in=my_trainees).count()
@@ -50,15 +49,14 @@ def generate_cards(context):
         card_links=[
           CardLink(title="Web Access", url=reverse('web_access:web_access-list'), number=web_access_count),
           CardLink(title="AV", url=reverse('audio:ta-audio-home'), number=av_count),
-          CardLink(title="Housing", url=reverse('house_requests:house-requests'),number=house_count),
           CardLink(title="Room Reservation", url=reverse('room_reservations:ta-room-reservation-list'),number=room_reservation_count),
           CardLink(title="Announcements", url=reverse('announcements:announcement-request-list'), number=announce_count)
         ]);
 
     cards.append(TA_requests)
 
-    ls_p = IndividualSlip.objects.filter(status='P', TA=user).count() + GroupSlip.objects.filter(status='P', trainees__in=my_trainees).count()
-    ls_f = IndividualSlip.objects.filter(status='F', TA=user).count() + GroupSlip.objects.filter(status='F', trainees__in=my_trainees).count()
+    ls_p = IndividualSlip.objects.filter(status='P', TA=user).count() + GroupSlip.objects.filter(status='P', TA=user).count()
+    ls_f = IndividualSlip.objects.filter(status='F', TA=user).count() + GroupSlip.objects.filter(status='F', TA=user).count()
 
 
     TA_leaveslips = Card(
@@ -95,6 +93,7 @@ def generate_cards(context):
         CardLink(title="HC Forms", url=reverse('hc:hc-admin')),
         CardLink(title="Graduation", url=reverse('graduation:grad-admin')),
         CardLink(title="Trainee Information", url=reverse('trainee_information')),
+        CardLink(title="Desginated Services Viewer", url=reverse('services:designated_services_viewer')),
       ]);
 
     cards.append(TA_admin)
@@ -125,6 +124,7 @@ def generate_cards(context):
       card_links=[
           CardLink(title="Service Portal", url=reverse('services:services_view')),
           CardLink(title="Service Admin", url='admin/services/'),
+          CardLink(title="Desginated Services Viewer", url=reverse('services:designated_services_viewer')),
       ])
 
     cards.append(service_card)
@@ -133,11 +133,13 @@ def generate_cards(context):
     attendance_card = Card(
       header_title='Rolls',
       card_links=[
-          CardLink(title="Class and Study", url=reverse('attendance:class-rolls')),
+          CardLink(title="Class", url=reverse('attendance:class-rolls')),
           CardLink(title="House", url=reverse('attendance:house-rolls')),
           CardLink(title="Meal", url=reverse('attendance:meal-rolls')),
+          CardLink(title="Study", url=reverse('attendance:study-rolls')),
           CardLink(title="Team", url=reverse('attendance:team-rolls')),
-          CardLink(title="YPC", url=reverse('attendance:ypc-rolls'))          
+          CardLink(title="YPC", url=reverse('attendance:ypc-rolls')),
+          CardLink(title="Assign trainees to schedules", url=reverse('schedules:assign-trainees')),
       ])
 
     cards.append(attendance_card)
@@ -152,6 +154,15 @@ def generate_cards(context):
       ])
 
     cards.append(schedules_card)
+
+  if user.has_group(['HC']):
+    attendance_card = Card(
+      header_title='House Coordinator',
+      card_links=[
+          CardLink(title="Daily attendance", url=reverse('absent_trainee_roster:absent_trainee_form')),
+      ])
+
+    cards.append(attendance_card)
 
 
   return cards

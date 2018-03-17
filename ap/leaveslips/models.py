@@ -29,6 +29,8 @@ class LeaveSlip(models.Model):
 
   class Meta:
     verbose_name = 'leave slip'
+    ordering = ["-submitted"]
+    abstract = True
 
   LS_TYPES = (
       ('CONF', 'Conference'),
@@ -102,10 +104,6 @@ class LeaveSlip(models.Model):
 
   def __unicode__(self):
     return "[%s] %s - %s" % (self.submitted.strftime('%m/%d'), self.type, self.trainee)
-
-  class Meta:
-    ordering = ["-submitted"]
-    abstract = True
 
 
 class IndividualSlipManager(models.Manager):
@@ -196,6 +194,9 @@ class GroupSlipManager(models.Manager):
     else:
       return queryset
 
+class GroupSlipAllManager(models.Manager):
+  def get_queryset(self):
+    return super(GroupSlipAllManager, self).get_queryset()
 
 class GroupSlip(LeaveSlip):
 
@@ -203,12 +204,13 @@ class GroupSlip(LeaveSlip):
     verbose_name = 'group slip'
 
   objects = GroupSlipManager()
+  objects_all = GroupSlipAllManager()
 
   start = models.DateTimeField()
   end = models.DateTimeField()
   trainees = models.ManyToManyField(Trainee, related_name='groupslip')  # trainees included in the leave slip
   # Field to relate GroupSlips to Service Assignments
-  service_assignment = models.ForeignKey(Assignment, blank=True, null=True)
+  service_assignment = models.ForeignKey(Assignment, blank=True, null=True, verbose_name="Service")
 
   def get_date(self):
     return self.start.date()
