@@ -16,7 +16,6 @@ class XBApplicationView(UpdateView):
 
   def get_object(self, queryset=None):
     if is_trainee(self.request.user):
-      print self.request.user
       obj, created = XBApplication.objects.get_or_create(trainee=trainee_from_user(self.request.user))
       return obj
     return None
@@ -35,5 +34,4 @@ class XBApplicationView(UpdateView):
   def get_context_data(self, **kwargs):
     ctx = super(XBApplicationView, self).get_context_data(**kwargs)
     ctx['page_title'] = 'FTTA-XB Application'
-    ctx['button_label'] = 'Submit'
     return ctx

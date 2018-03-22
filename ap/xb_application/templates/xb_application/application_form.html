@@ -26,23 +26,22 @@ If you have any questions, please fellowship with the FTTA Office.
 <a href=#>FTTA - XB Elders Comments</a> </p>
 <form id="id_xb_form" action="" method="post">
   {% csrf_token %}
+
+  {% for field in form %}
+  <div class="row"><div class="col-xs-12"><div class="panel">
+    <p>{{field.label}}</p>
+      <div class="row"><div class="col-xs-12">
+        {{field}}
+      </div></div>
+  </div></div></div>
+  {% endfor %}
+  
   <div class="row">
-    <div class="col-xs-12">
-      <table class="table table-bordered" id="table">
-        {% for field in form %}
-        <tr>
-          <th><label for="{{field.id_for_label}}">{{field.label}}</label></th>
-          <th>{{field}}</th>
-        </tr>
-        {% endfor %}
-      </table>
+      <div class="col-md-12">
+        <button type="submit" class="btn btn-primary btn-save">Save</button>
+        <button type="submit" class="btn btn-primary btn-save">Submit</button>
+      </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <button type="submit" class="btn btn-primary btn-save">{{button_label|safe}}</button>
-      <button type="submit" class="btn btn-primary btn-save">Save</button>
-    </div>
-  </div>
-</form>
+
+
 {% endblock %}
