@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 
 from accounts.models import Trainee
+from lifestudies.models import Discipline
 from terms.models import Term
 from leaveslips.models import IndividualSlip, GroupSlip
 from attendance.models import Roll
@@ -195,9 +196,14 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     if "Number of LS" in items_for_query:
       for trainee in filtered_trainees:
+        if trainee.full_name not in rtn_data:
+          rtn_data[trainee.full_name] = {}
         rtn_data[trainee.full_name]['Number of LS'] = len(Discipline.objects.filter(trainee=trainee))
 
+
     for trainee in filtered_trainees:
+      if trainee.full_name not in rtn_data:
+          rtn_data[trainee.full_name] = {}
       for general_item in data['general_report']:
         if general_item == "gender":
           rtn_data[trainee.full_name]["Gender"] = rtn_data[trainee.gender]
