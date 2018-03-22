@@ -18,7 +18,7 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
   template_name = 'reports/reports.html'
   group_required = [u'training_assistant']
 
-  success_url = reverse_lazy('reports:generate-reports')
+  #success_url = reverse_lazy('reports:generated-report')
   form_class = ReportGenerateForm
 
   LS_TYPES = {
@@ -144,6 +144,10 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
           rtn_data[roll.trainee.full_name]['Absences - Unexcused and Sickness'] = 1
         elif 'Absences - Unexcused and Sickness' in items_for_query and ('Absences - Unexcused' in status_of_roll or 'Absences - Excused - Sickness' in status_of_roll):
           rtn_data[roll.trainee.full_name]['Absences - Unexcused and Sickness'] += 1
+        if 'Classes Missed' in items_for_query and not 'Classes Missed' in rtn_data[roll.trainee.full_name] and roll.event.type == 'C':
+          rtn_data[roll.trainee.full_name]['Classes Missed'] = 1
+        elif 'Classes Missed' in items_for_query and 'Classes Missed' in rtn_data[roll.trainee.full_name] and roll.event.type == 'C':
+          rtn_data[roll.trainee.full_name]['Classes Missed'] += 1
       #for tardy rolls add to total tardy count as well as type of tardy count
       elif roll.status == 'T':
         if not 'Tardies - Total' in rtn_data[roll.trainee.full_name] and 'Tardies - Total' in items_for_query:
@@ -188,6 +192,26 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
         elif status_of_roll in items_for_query:
           rtn_data[roll.trainee.full_name][status_of_roll] += 1
 
+
+    if "Number of LS" in items_for_query:
+      for trainee in filtered_trainees:
+        rtn_data[trainee.full_name]['Number of LS'] = len(Discipline.objects.filter(trainee=trainee))
+
+    for trainee in filtered_trainees:
+      for general_item in data['general_report']:
+        if general_item == "Gender":
+          rtn_data[trainee.full_name]["Gender"] = rtn_data[trainee.gender]
+        elif general_item == "Term":
+          rtn_data[trainee.full_name]["Term"] = rtn_data[trainee.current_term]
+        elif general_item == "Sending Locality":
+          rtn_data[trainee.full_name]["Sending Locality"] = rtn_data[trainee.locality.city.name]
+        elif general_item == "Team":
+          rtn_data[trainee.full_name]["Team"] = rtn_data[trainee.team.name]
+        elif general_item == "TA":
+          rtn_data[trainee.full_name]["TA"] = rtn_data[trainee.TA.full_name]
+      
+
+
     """
     for item in items_for_query:
       if item == "Absences - Excused":
@@ -214,15 +238,16 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
     #  rtn_data[t.get_full_name()] = {'Total Absences': absences, 'Total Tardies': tardies}
     
     print rtn_data
-
+    context = {
+      'data': rtn_data
+    }
 
     #context = super(ReportCreateView, self).get_context_data(**kwargs)
 
     #based on data, filter all the relevant data for the report
 
     #return render(request, 'reports/reports.html', context={'data': rtn_data})
-    return render(request, "reports/reports.html", context={'data': rtn_data})
-
+    return render(request, "reports/generated_report.html", context=context)
 
     #return JsonResponse(rtn_data)
 

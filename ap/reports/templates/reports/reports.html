@@ -9,7 +9,6 @@
     
   </div>
 
-	{{ data }}
 	{% if data %}
 		<h2> Generated Report</h2>
 		<table>
@@ -23,7 +22,7 @@
 	{% endif %}
 
   <h2>Generate Attendance Reports </h2>
-<form action="" id="reportsForm" method="post" class="form-horizontal">
+<form action="{% url 'reports:generated-report' %}" id="reportsForm" method="post" class="form-horizontal">
   <div class="reports-form-container">
   	<div class="form-group right-push col-xs-2 col-sm-2 col-md-2 col-lg-2 Attendance Period Time Range">
   		Time Range
@@ -146,10 +145,10 @@
       rtn_data['general_items'] = general_items;
       rtn_data['general_report'] = general_report;
       rtn_data['date_range'] = date_from + ";" + date_to;
-
+      
       $.ajax({
         type: 'POST',
-        url: window.location.pathname,
+        url: "{% url 'reports:generated-report' %}",
         data: rtn_data,
         success: function(data, status, jqXHR) {
         	console.log('****************************************');
@@ -164,13 +163,15 @@
         	//}
         	//$("#generatedReport").html(data);
         	//window.location = SUCCESS_URL || window.location;
-          // window.location = SUCCESS_URL || window.location;
+          window.location.href = url;
+          //window.location = SUCCESS_URL || window.location;
 
         },
         error: function (jqXHR, textStatus, errorThrown ) {
           alert('Error thrown is: ' + errorThrown + '; ' + textStatus);
         }
       });
+      
 
     });
   });
