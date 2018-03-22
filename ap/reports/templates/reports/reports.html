@@ -148,7 +148,7 @@
       
       $.ajax({
         type: 'POST',
-        url: "{% url 'reports:generated-report' %}",
+        url: window.location.pathname,
         data: rtn_data,
         success: function(data, status, jqXHR) {
         	console.log('****************************************');
@@ -163,7 +163,7 @@
         	//}
         	//$("#generatedReport").html(data);
         	//window.location = SUCCESS_URL || window.location;
-          window.location.href = url;
+          //window.location.href = url;
           //window.location = SUCCESS_URL || window.location;
 
         },

@@ -18,7 +18,7 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
   template_name = 'reports/reports.html'
   group_required = [u'training_assistant']
 
-  #success_url = reverse_lazy('reports:generated-report')
+  success_url = reverse_lazy('reports:generate-reports')
   form_class = ReportGenerateForm
 
   LS_TYPES = {
@@ -199,18 +199,16 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     for trainee in filtered_trainees:
       for general_item in data['general_report']:
-        if general_item == "Gender":
+        if general_item == "gender":
           rtn_data[trainee.full_name]["Gender"] = rtn_data[trainee.gender]
-        elif general_item == "Term":
+        elif general_item == "term":
           rtn_data[trainee.full_name]["Term"] = rtn_data[trainee.current_term]
-        elif general_item == "Sending Locality":
+        elif general_item == "sending_locality":
           rtn_data[trainee.full_name]["Sending Locality"] = rtn_data[trainee.locality.city.name]
         elif general_item == "Team":
-          rtn_data[trainee.full_name]["Team"] = rtn_data[trainee.team.name]
+          rtn_data[trainee.full_name]["team"] = rtn_data[trainee.team.name]
         elif general_item == "TA":
-          rtn_data[trainee.full_name]["TA"] = rtn_data[trainee.TA.full_name]
-      
-
+          rtn_data[trainee.full_name]["ta"] = rtn_data[trainee.TA.full_name]
 
     """
     for item in items_for_query:
@@ -246,7 +244,7 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     #based on data, filter all the relevant data for the report
 
-    #return render(request, 'reports/reports.html', context={'data': rtn_data})
+    #return render(request, 'reports/reports.html', context=context)
     return render(request, "reports/generated_report.html", context=context)
 
     #return JsonResponse(rtn_data)
