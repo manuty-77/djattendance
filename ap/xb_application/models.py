@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import models
+from django.core.urlresolvers import reverse
 from accounts.models import Trainee
 
 
@@ -132,3 +130,6 @@ class XBApplication(models.Model):
   date_submitted = models.DateField(null=True, blank=True)
 
   last_updated = models.DateField(null=True, blank=True)
+
+  def get_absolute_url(self):
+    return reverse('xb:xb-application')

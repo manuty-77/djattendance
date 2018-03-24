@@ -155,7 +155,7 @@ def generate_menu(context):
   xb_menu = MenuItem(
       name='FTTA-XB',
       trainee_only=[
-          SubMenuItem(name="FTTA-XB Application", url='xb:xb-application-view'),
+          SubMenuItem(name="FTTA-XB Application", url='xb:xb-application'),
       ]
   )
 

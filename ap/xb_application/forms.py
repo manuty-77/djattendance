@@ -1,5 +1,6 @@
 from django import forms
 from .models import XBApplication
+from aputils.widgets import DatePicker
 
 
 class XBApplicationForm(forms.ModelForm):
@@ -15,6 +16,14 @@ class XBApplicationForm(forms.ModelForm):
   class Meta:
     model = XBApplication
     exclude = ['trainee', 'submitted', 'date_submitted', 'last_updated']
+    widgets = {
+      "birthdate": DatePicker(),
+      "date_saved": DatePicker(),
+      "date_baptized": DatePicker(),
+      "first_church_date": DatePicker(),
+      "grad_date": DatePicker(),
+      "date_marriage": DatePicker(),
+    }
 
 
 class ListTextWidget(forms.TextInput):
