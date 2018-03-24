@@ -124,10 +124,12 @@ class ReportView(ListView):
 
     objs = self.model.objects.all()
     o = [o for o in objs if o.responded]
-    context.update({
+    context = {
       'data': o,
-      'title': self.model + ' Report'
-    })
+      'title': self.model.__name__ + ' Report'
+    }
+
+    return context
 
 
 class TestimonyReport(ReportView):
