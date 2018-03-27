@@ -24,6 +24,8 @@
            selection.addRange(range);
        }
     };
+
+    console.log("{{event_type}}")
     </script>
 {% endblock %}
 {% block references %}
@@ -35,7 +37,7 @@
     }
 
   .dt-buttons{
-    padding-left: 50px;
+    padding-left: 30px;
   }
 
   </style>
@@ -349,11 +351,28 @@
       '<"row"<"col-sm-5"i><"col-sm-7"p>>',
       buttons: [
         "order_by",
-        "date_header",
-        "roll_header",
-        "time_header",
+        {
+          extend: "collection",
+          text: "Show/Hide Headers",
+          buttons: [ "date_header", "roll_header", "time_header" ]
+        },
+        {
+          extend: "collection",
+          text: "Weeks",
+          buttons: [ 'pdf' ],
+        },
+
       ],
     });
+
+    for (i=0; i<20; i++){
+      table.button().add("2-0", {
+        action: function(){
+
+        },
+        text: "week "+i,
+      });    
+    };
 
     function getParamsForColumn(index) {
       var selects = $('.set_all');
