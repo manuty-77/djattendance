@@ -2,7 +2,7 @@ from itertools import chain
 import json
 
 from django.views import generic
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.shortcuts import redirect
 
@@ -17,7 +17,6 @@ from .serializers import IndividualSlipSerializer, IndividualSlipFilter, GroupSl
 from accounts.models import TrainingAssistant
 from attendance.views import react_attendance_context
 from aputils.utils import modify_model_status
-from aputils.trainee_utils import trainee_from_user
 from aputils.decorators import group_required
 from schedules.serializers import AttendanceEventWithDateSerializer
 

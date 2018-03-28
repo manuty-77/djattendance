@@ -40,6 +40,22 @@
     $('[data-toggle="tooltip"]').tooltip()
   })
 
+  $(document).ready(function(){
+    $("#display_leaveslips #checkall").click(function () {
+        if ($("#display_leaveslips #checkall").is(':checked')) {
+          $("#display_leaveslips input[type=checkbox]").each(function () {
+            $(this).prop("checked", true);
+          });
+
+        } else {
+          $("#display_leaveslips input[type=checkbox]").each(function () {
+            $(this).prop("checked", false);
+          });
+        }
+      });
+  });
+
+
 
 </script>
 {% endblock %}
@@ -79,6 +95,7 @@
     <table id="display_leaveslips" class="table table-condensed table-hover table-bordered table-striped">
       <thead>
         <tr>
+          <th><input type="checkbox" id="checkall" /></th>
           <th>Name(s)</th>
           <th>Reason</th>
           <th>Date</th>
@@ -92,6 +109,7 @@
       <tbody>
         {% for leaveslip in leaveslips %}
           <tr>
+            <td><input type="checkbox" name="selection" value="{{discipline.pk}}"></input></td>
             {% if leaveslip.classname == "individual" %}
               <td>{{leaveslip.trainee.full_name}}</td>
             {% else %}
