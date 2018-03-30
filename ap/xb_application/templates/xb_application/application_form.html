@@ -57,9 +57,15 @@
     }
 
     function updateCountdown() {
+      word_count = $("#id_narrative").val()
+      if (word_count == ""){
+        word_count = 0
+      } else{
+        word_count = $("#id_narrative").val().split(" ").length;
+      }    
       display = $("#remaining_chars")
       var remaining = 3000 - jQuery("#id_narrative").val().length;
-      jQuery(display).text(remaining + ' characters remaining.');
+      jQuery(display).text(remaining + ' characters remaining. Word Count: ' + word_count);
     }
 
     $( document ).ready(() => {
@@ -80,7 +86,7 @@
 
       updateCountdown()
       $('#id_narrative').change(updateCountdown);
-      $('#id_narrative').keyup(updateCountdown);
+      $('#id_narrative').keyup(updateCountdown);     
       
       
     });
