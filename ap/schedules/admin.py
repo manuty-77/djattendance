@@ -13,14 +13,14 @@ class EventAdmin(FilteredSelectMixin, admin.ModelAdmin):
   list_filter = ('code', 'type', 'class_type', 'monitor', 'weekday', 'chart')
   registered_filtered_select = [('schedules', Schedule), ]
   save_as = True
-  list_display = ("name", "code", "description", "type", "start", "end", "day", "weekday", "chart")
+  list_display = ("pk", "name", "code", "description", "type", "start", "end", "day", "weekday", "chart")
 
 
 # Works without mixin b/c relationship is explicitly defined
 class ScheduleAdmin(admin.ModelAdmin):
   form = ScheduleForm
   save_as = True
-  list_display = ("name", "comments", "priority", "term", "season", "weeks", "is_deleted")
+  list_display = ("pk", "name", "comments", "priority", "term", "season", "weeks", "is_deleted")
   registered_filtered_select = [('trainees', Trainee), ('events', Event)]
   search_fields = ["name", "comments"]
 
