@@ -9,7 +9,7 @@ from .forms import EventForm, ScheduleForm
 
 class EventAdmin(FilteredSelectMixin, admin.ModelAdmin):
   form = EventForm
-  search_fields = ['name', 'description', 'code', 'start', 'end']
+  search_fields = ['pk', 'name', 'description', 'code', 'start', 'end']
   list_filter = ('code', 'type', 'class_type', 'monitor', 'weekday', 'chart')
   registered_filtered_select = [('schedules', Schedule), ]
   save_as = True
@@ -22,7 +22,7 @@ class ScheduleAdmin(admin.ModelAdmin):
   save_as = True
   list_display = ("pk", "name", "comments", "priority", "term", "season", "weeks", "is_deleted")
   registered_filtered_select = [('trainees', Trainee), ('events', Event)]
-  search_fields = ["name", "comments"]
+  search_fields = ["pk", "name", "comments"]
 
 
 admin.site.register(Event, EventAdmin)
