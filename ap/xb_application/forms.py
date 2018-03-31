@@ -20,12 +20,11 @@ class XBApplicationForm(forms.ModelForm):
     self.fields['spouse_attitude'].label = "Spouse's attitude towards the training"
     self.fields['pertinent_info'].label = "Other Pertinent information"
     self.fields['ftt_location'].label = "Previous training in Taipei, Anaheim or other FTT"
-
     self.fields['support_yourself'].label = "Yourself"
     self.fields['support_church'].label = "Church"
-    self.fields['support_family'].label = "Family/Friends"    
+    self.fields['support_family'].label = "Family/Friends"
     self.fields['support_other'].label = "Other"
-  
+
   SUPPORT_CHOICES = (
       ('Y', 'Yourself'),
       ('C', 'Church'),
@@ -56,20 +55,3 @@ class XBApplicationForm(forms.ModelForm):
       'ftta_service': forms.TextInput(attrs={'rows': 1, 'size': '60vh'}),
       'pertinent_info': forms.Textarea(attrs={'rows': 4, 'cols': '100'}),
     }
-
-
-class ListTextWidget(forms.TextInput):
-    def __init__(self, data_list, name, *args, **kwargs):
-        super(ListTextWidget, self).__init__(*args, **kwargs)
-        self._name = name
-        self._list = data_list
-        self.attrs.update({'list': 'list__%s' % self._name})
-
-    def render(self, name, value, attrs=None):
-        text_html = super(ListTextWidget, self).render(name, value, attrs=attrs)
-        data_list = '<datalist id="list__%s">' % self._name
-        for item in self._list:
-            data_list += '<option value="%s">' % item
-        data_list += '</datalist>'
-
-        return (text_html + data_list)
