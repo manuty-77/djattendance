@@ -10,7 +10,7 @@ class XBApplicationForm(forms.ModelForm):
     self.fields['address'].label = "Home address"
     self.fields['automobile'].label = "Do you plan to bring an automobile?"
     self.fields['seats'].label = "If yes, how many seats including driver"
-    self.fields['grad_date'].label = "Graduation date"
+    self.fields['grad_date'].label = "Month/Year graduated"
     self.fields['loans'].label = "Do you have any significant student loans or other debt?"
     self.fields['first_church'].label = "Locality where you first contacted the church"
     self.fields['first_church_date'].label = "Date when you first contacted the church"
@@ -19,6 +19,19 @@ class XBApplicationForm(forms.ModelForm):
     self.fields['date_marriage'].label = "Date of marriage"
     self.fields['spouse_attitude'].label = "Spouse's attitude towards the training"
     self.fields['pertinent_info'].label = "Other Pertinent information"
+    self.fields['ftt_location'].label = "Previous training in Taipei, Anaheim or other FTT"
+
+    self.fields['support_yourself'].label = "Yourself"
+    self.fields['support_church'].label = "Church"
+    self.fields['support_family'].label = "Family/Friends"    
+    self.fields['support_other'].label = "Other"
+  
+  SUPPORT_CHOICES = (
+      ('Y', 'Yourself'),
+      ('C', 'Church'),
+      ('F', 'Family'),
+      ('O', 'Other'),
+  )
 
   class Meta:
     model = XBApplication
@@ -36,6 +49,10 @@ class XBApplicationForm(forms.ModelForm):
       "citizenship": forms.RadioSelect,
       "marital": forms.RadioSelect,
       "spouse_attitude": forms.RadioSelect,
+      "support_yourself": forms.CheckboxInput,
+      "support_church": forms.CheckboxInput,
+      "support_family": forms.CheckboxInput,
+      "support_other": forms.CheckboxInput,
       'ftta_service': forms.TextInput(attrs={'rows': 1, 'size': '60vh'}),
       'pertinent_info': forms.Textarea(attrs={'rows': 4, 'cols': '100'}),
     }
