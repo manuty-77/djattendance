@@ -52,6 +52,23 @@ class Roll(models.Model):
   # the date of the event that corresponds with the roll.
   date = models.DateField()
 
+
+  # property to define the main_roll
+  # if user is on self_attendance, main roll is where trainee and submitted_by are the same
+  # if user is not on self_attendance and is a team monitor, then main roll for team events are where trainee and submitted_by are the same
+  # else for all other rolls, the main roll are where trainee and submitted_by are not the same
+  @property
+  def main_roll(self):
+    sa = self.trainee.self_attendance
+    if sa:
+      return True if self.trainee == self.submitted_by else False
+    else:
+      if self.trainee.has_group("team_monitors") & self.event.type == 'T':
+        return True if self.trainee == self.submitted_by else False
+      else:
+        return False if self.trainee == self.submitted_by else True
+
+
   def __unicode__(self):
     # return status, trainee name, and event
     return "[%s] %s @ [%s] %s" % (self.date, self.event, self.status, self.trainee)
