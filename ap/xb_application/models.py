@@ -1,6 +1,28 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 from accounts.models import Trainee
+from terms.models import Term
+
+
+class XBAdmin(models.Model):
+
+  SHOW_CHOICES = (
+      ('NO', 'No'),
+      ('YES', 'Yes'),
+      ('SHOW', 'Show only')
+  )
+
+  term = models.OneToOneField(Term, blank=True)
+
+  xb_show_status = models.CharField(max_length=4, choices=SHOW_CHOICES, default='NO')
+
+  xb_due_date = models.DateField(blank=True, null=True)
+
+  def __unicode__(self):
+    return "[XB Applications] %s" % (self.term)
+
+  def get_absolute_url(self):
+    return reverse('xb:xb-admin')
 
 
 class XBApplication(models.Model):
@@ -82,7 +104,7 @@ class XBApplication(models.Model):
   citizenship = models.CharField(max_length=30, choices=CITIZENSHIP_CHOICES, null=True, blank=True)
 
   citizenship_other = models.CharField(max_length=100, null=True, blank=True)
-  
+
   college1 = models.CharField(max_length=100, null=True, blank=True)
 
   major1 = models.CharField(max_length=100, null=True, blank=True)

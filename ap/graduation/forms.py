@@ -51,7 +51,7 @@ class RemembranceForm(GenericModelForm):
   class Meta(GenericModelForm.Meta):
     model = Remembrance
     widgets = {
-        'remembrance_text': forms.TextInput(attrs={'rows': 1, 'maxlength': 50, 'size': '60vh', 'placeholder':'maximum 50 characters'}),
+        'remembrance_text': forms.TextInput(attrs={'rows': 1, 'maxlength': 50, 'size': '60vh', 'placeholder': 'maximum 50 characters'}),
         'remembrance_reference': forms.TextInput(attrs={'rows': 1, 'size': '30vh'})
     }
 
@@ -68,7 +68,7 @@ class GradAdminForm(forms.ModelForm):
 
   class Meta:
     model = GradAdmin
-    exclude = ['term', ]
+    exclude = ['term', 'website_due_date', 'website_show_status']
     widgets = {
         'testimony_due_date': DatePicker(),
         'consideration_due_date': DatePicker(),
