@@ -153,17 +153,15 @@
       $('#id_narrative').change(updateCountdown);
       $('#id_narrative').keyup(updateCountdown);
 
-      narrative_wordcount()      
+      narrative_wordcount()
 
       {% if read_only %}
         $('#id_xb_form *').attr("disabled", true);
-      {% endif %}
+      {% endif %}   
+      
     });
-
-  </script>
   </script>
 
-  </script>
 {% endblock %}
 
 {% block references %}
