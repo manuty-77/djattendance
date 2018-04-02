@@ -1,9 +1,10 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group
-from attendance.models import Roll
+from attendance.models import *
 from schedules.models import Event
 from accounts.models import *
 from terms.models import Term
+from leaveslips.models import *
 from datetime import *
 import random
 import pickle
@@ -55,29 +56,37 @@ class Command(BaseCommand):
                         exist = True
 
                 if not exist:
-                    count+=1
-                    if r.submitted_by == t:
-                        submit = 'themself'
-                    elif r.submitted_by in AM:
-                        submit = 'Attendance Monitor ' + r.submitted_by.full_name
-                    else:
-                        submit = r.submitted_by.full_name
+                    attached_IS = IndividualSlip.objects.filter(trainee=t, rolls__in=[r])
+                    attached_GS = GroupSlip.objects.filter(trainees__in=[t])
+                    GS_exist = False
+                    for gs in attached_GS:
+                        if r.event in gs.events:
+                            GS_exist = True
+                    if not attached_IS and GS_exist:
 
-                    if not t_exist:
-                        if t.current_term > 2:
-                            sa = 'in their 2nd year'
+                        count+=1
+                        if r.submitted_by == t:
+                            submit = 'themself'
+                        elif r.submitted_by in AM:
+                            submit = 'Attendance Monitor ' + r.submitted_by.full_name
                         else:
-                            sa = 'in their 1st year'
+                            submit = r.submitted_by.full_name
 
-                        if t.self_attendance:
-                            sa = sa + ' on self attendance'
-                        else:
-                            sa = sa + ' not on self attendance'
-                        print t.full_name2, sa
-                        t_exist = True
-                    
-                    print 'Roll ID', r.id, 'for', r.event.name,'with Event ID', r.event.pk, 'on', r.date, 'submitted by', submit
+                        if not t_exist:
+                            if t.current_term > 2:
+                                sa = 'in their 2nd year'
+                            else:
+                                sa = 'in their 1st year'
 
+                            if t.self_attendance:
+                                sa = sa + ' on self attendance'
+                            else:
+                                sa = sa + ' not on self attendance'
+                            print t.full_name2, sa
+                            t_exist = True
+                        
+                        print 'Roll ID', r.id, 'for', r.event.name,'with Event ID', r.event.pk, 'on', r.date, 'submitted by', submit
+                  
             if t_exist:
                 print 
         print count
