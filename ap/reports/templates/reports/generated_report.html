@@ -1,8 +1,83 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load bootstrap3 %}
+{% load report_filters %}
+
+{% block scripts %}
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#generated-report-table").DataTable({
+      info: false,
+      paging: false,
+      autoWidth: true,
+      dom: '<"row"<"col-sm-6"Bl><"col-sm-6"f>>' +
+      '<"row"<"col-sm-12"<"table-responsive"tr>>>' +
+      '<"row"<"col-sm-5"i><"col-sm-7"p>>',
+      fixedHeader: {
+        header: true
+      },
+      buttons: [
+      {
+        extend: 'print',
+        text: 'Print',
+        autoPrint: true,
+        exportOptions:{
+          columns: ':visible'
+        },
+      },
+      {
+        extend: 'csvHtml5',
+        text: 'CSV',
+        exportOptions: {
+          columns: ':visible'
+        },
+      },
+      {
+        extend: 'pdf',
+        text: 'PDF',
+        exportOptions:{
+          columns: ':visible'
+        },
+      },
+      {
+        extend: 'collection',
+        buttons: 'columnsVisibility',
+        text: 'Show/Hide Columns',
+        columns: ':gt(1)',
+      },
+      ],
+    });
+  });
+</script>
+{% endblock %}
 
 {% block content %}
 <h2>Generated Report </h2>
- {{ data }}
+  <div class="panel-body">
+    <table id="generated-report-table" class="table table-striped">
+      <thead>
+      	<tr>
+        	<th>Trainee</th>
+        	{% for item in data|get_item:0 %}
+      	  <th> {{ item }} </th>
+        	{% endfor %}
+      	</tr>
+      </thead>
+      	
+      <tbody>
+				{% for trainee in data %}
+      	<tr>
+        <td> {{ trainee }} </td>  
+        {% for each in data|get_item_for_dict:trainee %}
+        {% with trainee_data=data|get_item_for_dict:trainee %}
+				<td>
+				{{ trainee_data|get_item_for_dict:each }}
+				</td>
+				{% endwith %}
+        {% endfor %}
+      	</tr>
+      	{% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}
