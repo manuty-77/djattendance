@@ -14,7 +14,7 @@ def grad_forms(user):
       forms.append(m.objects.get_or_create(trainee=user, grad_admin=admin)[0])
 
     xb_admin, created = XBAdmin.objects.get_or_create(term=Term.current_term())
-    forms.append(XBApplication.objects.get_or_create(trainee=user, xb_admin=xb_admin))
+    forms.append(XBApplication.objects.get_or_create(trainee=user, xb_admin=xb_admin)[0])
 
     forms = filter(lambda f: (user.current_term == 4 and f.show_status != 'NO'), forms)
 
