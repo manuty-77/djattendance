@@ -2,10 +2,11 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group
 from attendance.models import Roll
 from schedules.models import Event
-from accounts.models import Trainee
+from accounts.models import *
 from terms.models import Term
-from datetime import date
+from datetime import *
 import random
+import pickle
 
 def new_roll(trainees=[], am=[]):
     events = Event.objects.filter(type="C")
@@ -41,6 +42,49 @@ class Command(BaseCommand):
           sis.groups.add(am_group)
         new_roll(trainees, am)
 
+    def _check_rolls(self):        
+        count = 0
+        AM = Trainee.objects.filter(groups__name="attendance_monitors")
+        for t in Trainee.objects.all():
+            t_exist = False
+            for r in Roll.objects.filter(trainee=t):
+                week, day = Term.current_term().reverse_date(r.date)
+                exist = False
+                for sch in t.active_schedules.filter(weeks__contains=week):
+                    if r.event in sch.events.all():
+                        exist = True
+
+                if not exist:
+                    count+=1
+                    if r.submitted_by == t:
+                        submit = 'themself'
+                    elif r.submitted_by in AM:
+                        submit = 'Attendance Monitor ' + r.submitted_by.full_name
+                    else:
+                        submit = r.submitted_by.full_name
+
+                    if not t_exist:
+                        if t.current_term > 2:
+                            sa = 'in their 2nd year'
+                        else:
+                            sa = 'in their 1st year'
+
+                        if t.self_attendance:
+                            sa = sa + ' on self attendance'
+                        else:
+                            sa = sa + ' not on self attendance'
+                        print t.full_name2, sa
+                        t_exist = True
+                    
+                    print 'Roll ID', r.id, 'for', r.event.name,'with Event ID', r.event.pk, 'on', r.date, 'submitted by', submit
+
+            if t_exist:
+                print 
+        print count
+        print 'pulled on', datetime.now()
+        
     def handle(self, *args, **options):
-        print('* Populating rolls...')
-        self._create_rolls()
+        # print('* Populating rolls...')
+        # self._create_rolls()
+        print ('* Looking through rolls...')
+        self._check_rolls()
