@@ -67,6 +67,7 @@ class XBApplication(models.Model):
       ('O', 'Other'),
   )
 
+  xb_admin = models.ForeignKey(XBAdmin, null=True, blank=True)
   # applicant
   trainee = models.ForeignKey(Trainee, null=True, blank=True)
 
@@ -171,3 +172,15 @@ class XBApplication(models.Model):
 
   def get_absolute_url(self):
     return reverse('xb:xb-application')
+
+  @property
+  def due_date(self):
+    d = self.xb_admin.xb_due_date
+    if d:
+      return d
+    else:
+      return datetime.now().date() + timedelta(days=1)
+
+  @property
+  def show_status(self):
+    return self.xb_admin.xb_show_status

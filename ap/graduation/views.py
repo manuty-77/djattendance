@@ -132,8 +132,11 @@ class GradAdminView(UpdateView, GroupRequiredMixin):
     ctx['4th_count'] = Misc.objects.filter(grad_admin=GradAdmin.objects.get(term=Term.objects.filter(current=True).first()), trainee__in=Trainee.objects.filter(current_term=4)).count()
     # xb form
     term = Term.current_term()
-    xb, created = XBAdmin.objects.get_or_create(term=term)
-    ctx['xb_form'] = XBAdminForm(instance=xb)
+    xba = XBAdmin.objects.filter(term=term)
+    if xba:
+      ctx['xb_form'] = XBAdminForm(instance=xba.first())
+    else:
+      ctx['xb_form'] = XBAdminForm()
     return ctx
 
 

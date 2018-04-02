@@ -154,8 +154,13 @@
       $('#id_narrative').keyup(updateCountdown);
 
       narrative_wordcount()      
-      
+
+      {% if read_only %}
+        $('#id_xb_form *').attr("disabled", true);
+      {% endif %}
     });
+
+  </script>
   </script>
 
   </script>
