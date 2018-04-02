@@ -42,21 +42,10 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
       'TTRIP': 'Team Trip',
   }
 
-  
-
-  
-
-
 class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
   template_name = 'reports/generated_report.html'
   group_required = [u'training_assistant']
-
-  def get_context_data(self, **kwargs):
-    return {}
-
-  def get_queryset(self):
-    return {}
-
+  
   def excused_status(self, trainee, roll):
     '''
     Checks if a roll in where the trainee is absent or tardy has been excused or not,
@@ -98,7 +87,6 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
   def post(self, request, *args, **kwargs):
     data = dict(request.POST.iterlists())
     rtn_data = dict() #{TRAINEE_NAME: {Absences - Total: 10, Tardies - Total: 5, ...}, TRAINEE_NAME: ...}
-    print str(data)
     date_from = datetime.strptime(data['date_from'][0], '%m/%d/%Y')
     date_to = datetime.strptime(data['date_to'][0], '%m/%d/%Y')
     delta = date_to - date_from
@@ -110,8 +98,6 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
     trainees = Trainee.objects.all()
 
     gender = data['gender']
-    #gender = data['gender'][0].split(';')
-    print str(gender)
 
     if "Male" not in gender:
       trainees = trainees.filter(gender="S")
@@ -123,19 +109,13 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
     #Return trainees only for the terms requested by report
     terms_filter = [int(s) for s in data['term'] if s.isdigit()]
-    print "FILTERED TERMS"
-    print str(terms_filter)
 
     filtered_trainees = Trainee.objects.none()
     for term in terms_filter:
       filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
-    print "FILTERED TRAINEES"
-    print str(filtered_trainees)
     filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list)
-    print "FILTERED ROLLS"
-    print str(filtered_rolls)
+    
     items_for_query = data['general_report']
-    #print str(items_for_query)
 
     for trainee in filtered_trainees:
       rtn_data[trainee.full_name] = {}
@@ -209,46 +189,11 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         elif general_item == "TA":
           rtn_data[trainee.full_name]["ta"] = rtn_data[trainee.TA.full_name]
 
-    """
-    for item in items_for_query:
-      if item == "Absences - Excused":
-      elif item == "Absences - Unexcused":
-      elif item == "Absences - Total":
-      elif item == "Absences - Unexcused and Sickness":
-      elif item == "Tardies - Late":
-      elif item == "Tardies - Left Class":
-      elif item == "Tardies - Uniform":
-      elif item == "Tardies - Total":
-      elif item == "Number of LS":
-      elif item == "Classes Missed":
-    """
-
-
-    #for t in filtered_trainees:
-    #  absences = 0
-    #  tardies = 0
-    #  for each_roll in t.get_attendance_record():
-    #    if each_roll['attendance'] == 'A':
-    #      absences += 1
-    #    elif each_roll['attendance'] == 'T':
-    #      tardies += 1
-    #  rtn_data[t.get_full_name()] = {'Total Absences': absences, 'Total Tardies': tardies}
-    
-    print str(rtn_data)
     context = {
       'data': rtn_data
     }
 
-    #context = super(ReportCreateView, self).get_context_data(**kwargs)
-
-    #based on data, filter all the relevant data for the report
-
-    #return render(request, 'reports/reports.html', context=context)
     return render(request, "reports/generated_report.html", context=context)
-
-    #return JsonResponse(rtn_data)
-  #def post(self, request, *args, **kwargs):
-
 
 
 
