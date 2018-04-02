@@ -6,9 +6,10 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block scripts %}
+{{block.super}}
   <script type="text/javascript">
 
-    var fields = ['testimony', 'consideration', 'website', 'outline', 'misc'];
+    var fields = ['testimony', 'consideration', 'website', 'outline', 'misc', 'remembrance'];
 
     function hide_field(field){
       $('label[for="id_' + field + '_due_date"]').hide();
@@ -61,6 +62,16 @@
       $( "select" ).change((e) => hide_or_show_element(e.target));
     });
   </script>
+{% endblock %}
+
+{% block references %}
+{{block.super}}
+<style type="text/css">
+  table { 
+    table-layout:fixed
+  }
+</style>
+
 {% endblock %}
 
 {% block content %}
