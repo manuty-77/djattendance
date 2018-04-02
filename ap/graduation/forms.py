@@ -68,7 +68,7 @@ class GradAdminForm(forms.ModelForm):
 
   class Meta:
     model = GradAdmin
-    exclude = ['term', 'website_due_date', 'website_show_status']
+    exclude = ['term', ]
     widgets = {
         'testimony_due_date': DatePicker(),
         'consideration_due_date': DatePicker(),

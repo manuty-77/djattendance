@@ -1,5 +1,6 @@
 from aputils.trainee_utils import is_trainee
 from graduation.models import Testimony, Consideration, Outline, Misc, Remembrance, GradAdmin
+from xb_application.models import XBApplication, XBAdmin
 from terms.models import Term
 
 
@@ -13,5 +14,9 @@ def grad_forms(user):
       forms.append(m.objects.get_or_create(trainee=user, grad_admin=admin)[0])
 
     forms = filter(lambda f: (user.current_term == 4 and f.show_status != 'NO'), forms)
+
+    xb_admin, created = XBAdmin.objects.get_or_create(term=Term.current_term())
+    if user.current_term == 4 and xb_admin.xb_show_status != 'NO':
+      forms.append(XBApplication.objects.get_or_create(trainee=user))
 
   return forms

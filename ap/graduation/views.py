@@ -130,7 +130,10 @@ class GradAdminView(UpdateView, GroupRequiredMixin):
     ctx['page_title'] = "Grad Admin"
     ctx['button_label'] = 'Save'
     ctx['4th_count'] = Misc.objects.filter(grad_admin=GradAdmin.objects.get(term=Term.objects.filter(current=True).first()), trainee__in=Trainee.objects.filter(current_term=4)).count()
-    ctx['xb_form'] = XBAdminForm()
+    # xb form
+    term = Term.current_term()
+    xb, created = XBAdmin.objects.get_or_create(term=term)
+    ctx['xb_form'] = XBAdminForm(instance=xb)
     return ctx
 
 
