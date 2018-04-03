@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group
 from attendance.models import *
-from schedules.models import Event
+from schedules.models import *
 from accounts.models import *
 from terms.models import Term
 from leaveslips.models import *
@@ -44,7 +44,8 @@ class Command(BaseCommand):
         new_roll(trainees, am)
 
     def _check_rolls(self):        
-        count = 0
+        total = 0
+        fixed = 0
         AM = Trainee.objects.filter(groups__name="attendance_monitors")
         for t in Trainee.objects.all():
             t_exist = False
@@ -55,21 +56,22 @@ class Command(BaseCommand):
                     if r.event in sch.events.all():
                         exist = True
 
-                if not exist:
-                    attached_IS = IndividualSlip.objects.filter(trainee=t, rolls__in=[r])
-                    attached_GS = GroupSlip.objects.filter(trainees__in=[t])
-                    GS_exist = False
-                    for gs in attached_GS:
-                        if r.event in gs.events:
-                            GS_exist = True
-                    if not attached_IS and GS_exist:
+                if not exist and r.event:
+                    # print t.full_name2
+                    # attached_IS = IndividualSlip.objects.filter(trainee=t, rolls__in=[r])
+                    # attached_GS = GroupSlip.objects.filter(trainees__in=[t])
+                    # GS_exist = False
+                    # for gs in attached_GS:
+                    #     if r.event in gs.events:
+                    #         GS_exist = True
+                    # if not attached_IS and GS_exist:
 
-                        count+=1
+                        total+=1
                         if r.submitted_by == t:
                             submit = 'themself'
                         elif r.submitted_by in AM:
                             submit = 'Attendance Monitor ' + r.submitted_by.full_name
-                        else:
+                        elif r.submitted_by:
                             submit = r.submitted_by.full_name
 
                         if not t_exist:
@@ -86,10 +88,23 @@ class Command(BaseCommand):
                             t_exist = True
                         
                         print 'Roll ID', r.id, 'for', r.event.name,'with Event ID', r.event.pk, 'on', r.date, 'submitted by', submit
+                    # else:
+
+                        t_sch = t.active_schedules.filter(weeks__contains=week).order_by('priority')
+                        update = False
+                        for sch in list(reversed(t_sch)):
+                            for ev in sch.events.all():
+                                if ev.name == r.event.name and ev.weekday == r.event.weekday and not update:
+                                    print 'Attached ID', r.event.id, 'Should be', ev.id
+                                    r.event = ev
+                                    r.save()
+                                    update = True
+                                    fixed+=1
                   
             if t_exist:
                 print 
-        print count
+        print 'total', count
+        print 'fixed', fixed
         print 'pulled on', datetime.now()
         
     def handle(self, *args, **options):
