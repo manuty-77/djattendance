@@ -43,7 +43,7 @@ class Command(BaseCommand):
           sis.groups.add(am_group)
         new_roll(trainees, am)
 
-    def _check_rolls(self):        
+    def _check_rolls(self):
         total = 0
         fixed = 0
         AM = Trainee.objects.filter(groups__name="attendance_monitors")
