@@ -10,3 +10,7 @@ def get_item(dict, index):
 @register.filter
 def get_item_for_dict(dict, item):
   return dict[item]
+
+@register.filter
+def get_date_range(dict):
+	return dict['date_from'].strip('00:00:00') + ' to ' + dict['date_to'].strip('00:00:00')

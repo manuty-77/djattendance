@@ -52,7 +52,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>Generated Report </h2>
+<h2>Generated Report {{ date_data|get_date_range }}</h2>
   <div class="panel-body">
     <table id="generated-report-table" class="table table-striped">
       <thead>

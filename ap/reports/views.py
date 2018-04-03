@@ -45,7 +45,7 @@ class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
   template_name = 'reports/generated_report.html'
   group_required = [u'training_assistant']
-  
+
   def excused_status(self, trainee, roll):
     '''
     Checks if a roll in where the trainee is absent or tardy has been excused or not,
@@ -87,8 +87,11 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
   def post(self, request, *args, **kwargs):
     data = dict(request.POST.iterlists())
     rtn_data = dict() #{TRAINEE_NAME: {Absences - Total: 10, Tardies - Total: 5, ...}, TRAINEE_NAME: ...}
+    date_data = dict()
     date_from = datetime.strptime(data['date_from'][0], '%m/%d/%Y')
     date_to = datetime.strptime(data['date_to'][0], '%m/%d/%Y')
+    date_data['date_from'] = str(date_from)
+    date_data['date_to'] = str(date_to)
     delta = date_to - date_from
 
     date_list = []
@@ -113,7 +116,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
     filtered_trainees = Trainee.objects.none()
     for term in terms_filter:
       filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
-    filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list)
+    filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list).exclude(status='P')
     
     items_for_query = data['general_report']
 
@@ -123,6 +126,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         rtn_data[trainee.full_name][item] = 0
     
     for roll in filtered_rolls:
+
       #if roll.status == 'P':
       #  if not 'Present' in rtn_data[roll.trainee.full_name]:
       #    rtn_data[roll.trainee.full_name]['Present'] = 1
@@ -175,22 +179,25 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
       for trainee in filtered_trainees:
         rtn_data[trainee.full_name]['Number of LS'] = len(Discipline.objects.filter(trainee=trainee))
 
-
     for trainee in filtered_trainees:
-      for general_item in data['general_report']:
-        if general_item == "gender":
-          rtn_data[trainee.full_name]["Gender"] = rtn_data[trainee.gender]
-        elif general_item == "term":
-          rtn_data[trainee.full_name]["Term"] = rtn_data[trainee.current_term]
-        elif general_item == "sending_locality":
-          rtn_data[trainee.full_name]["Sending Locality"] = rtn_data[trainee.locality.city.name]
+      for general_item in data['general_item']:
+        if general_item == "Gender":
+          rtn_data[trainee.full_name]["Gender"] = trainee.gender
+        elif general_item == "Term":
+          rtn_data[trainee.full_name]["Term"] = trainee.current_term
+        elif general_item == "Sending Locality":
+          if trainee.locality != None:
+            rtn_data[trainee.full_name]["Sending Locality"] = trainee.locality.city.name
+          else:
+            rtn_data[trainee.full_name]["Sending Locality"] = 'N/A'
         elif general_item == "Team":
-          rtn_data[trainee.full_name]["team"] = rtn_data[trainee.team.name]
+          rtn_data[trainee.full_name]["team"] = trainee.team.name
         elif general_item == "TA":
-          rtn_data[trainee.full_name]["ta"] = rtn_data[trainee.TA.full_name]
+          rtn_data[trainee.full_name]["ta"] = trainee.TA.full_name
 
     context = {
-      'data': rtn_data
+      'data': rtn_data,
+      'date_data': date_data
     }
 
     return render(request, "reports/generated_report.html", context=context)
