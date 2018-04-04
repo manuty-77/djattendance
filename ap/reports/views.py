@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from braces.views import LoginRequiredMixin, GroupRequiredMixin
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
@@ -6,12 +5,8 @@ from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render
 from .forms import ReportGenerateForm
 from datetime import date, timedelta, datetime
-from django.utils import timezone
-from django.http import JsonResponse
-
 from accounts.models import Trainee
 from lifestudies.models import Discipline
-from terms.models import Term
 from leaveslips.models import IndividualSlip, GroupSlip
 from attendance.models import Roll
 
@@ -201,6 +196,3 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
     }
 
     return render(request, "reports/generated_report.html", context=context)
-
-
-

@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from accounts.models import Trainee
 
 """
-This class represents a generated attendance and/or exam report.
+This class represents a generated attendance report.
 """
 
 class Report(models.Model):
@@ -14,5 +14,3 @@ class Report(models.Model):
     ('EXAM', 'exam'),
     ('BOTH', 'both')
   )
-
-  
