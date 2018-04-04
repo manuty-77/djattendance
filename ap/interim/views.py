@@ -19,7 +19,7 @@ class InterimIntentionsView(UpdateView):
     return int_int
 
   def form_valid(self, form):
-    self.update_interim_itinerary(service_attendance=self.get_object(), data=self.request.POST.copy())
+    self.update_interim_itinerary(interim_intentions=self.get_object(), data=self.request.POST.copy())
     return super(InterimIntentionsView, self).form_valid(form)
 
   def update_interim_itinerary(self, interim_intentions, data):
@@ -31,9 +31,9 @@ class InterimIntentionsView(UpdateView):
     for index in range(len(start_list)):
       itin = InterimItinerary()
       itin.interim_intentions = interim_intentions
-      itin.start_datetime = parser.parse(start_list[index])
-      itin.end_datetime = parser.parse(end_list[index])
-      itin.task_performed = commments_list[index]
+      itin.start = parser.parse(start_list[index])
+      itin.end = parser.parse(end_list[index])
+      itin.comments = commments_list[index]
       itin.save()
 
   def get_context_data(self, **kwargs):

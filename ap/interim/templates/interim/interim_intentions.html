@@ -7,7 +7,6 @@
 
 {% block scripts %}
 {{ block.super }}
-{{ block.super }}
 <style>
   #submit{
     display: inline-block;
@@ -33,9 +32,7 @@ $(document).ready(() => {
 
   const size = 10;
 
-  $('.datepicker').datepicker({
-    dateFormat: "m/d/Y",
-  });
+  $('.datepicker').datepicker();
 
   $("#add_row").click(() => {
     let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
@@ -44,9 +41,7 @@ $(document).ready(() => {
       $("#id_itinerary_table tr:last").clone().appendTo("#id_itinerary_table");
       val++;
       $("#id_itinerary_table tr:last").attr("id","row_" + val);
-      $('.datetimepicker').datetimepicker({
-        format:'m/d/Y H:i'
-      });
+      $('.datepicker').datepicker();
     }
   })
 
@@ -88,9 +83,7 @@ $(document).ready(() => {
 {% endif %}
 
 
-<p>You can just add a comment on "tasked performed" column by itself (ie: sick/service/etc).
-Also, posting hours again overwrites the old submission so you can post more than once.
-Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hours and no tasks performed will be deleted on save.</p>
+<p>Intsructions.</p>
 
 <br><br>
 
