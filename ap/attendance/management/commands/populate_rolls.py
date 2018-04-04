@@ -107,8 +107,33 @@ class Command(BaseCommand):
         print 'fixed', fixed
         print 'pulled on', datetime.now()
         
+    def _check_present_rolls(self):
+        print ('* Looking through rolls with present status and making sure they have a leaveslip attached')
+        for r in Roll.objects.filter(status='P'):
+            attached_IS = IndividualSlip.objects.filter(rolls__in=[r])
+            if not attached_IS:
+                print r.id, r, r.event
+
+    def combine_rolls_with_leaveslip(self):
+        print ('* Looking at rolls with present status whichs should be attached to a leaveslip, and a duplicate roll with a non-present status for the same event, date, and trainee. Combining them')
+        for r in Roll.objects.filter(status='P'):
+            same_roll = Roll.objects.filter(event=r.event, trainee=r.trainee, date=r.date).exclude(status='P')
+            if same_roll.count() > 1:
+                print r.id, r, "has more than one duplicate rolls"
+            elif same_roll.count() == 1:
+                dup_roll = same_roll.first()
+                r.status = dup_roll.status
+                r.submitted_by = dup_roll.submitted_by
+                r.save()
+                if dup_roll.leaveslips is None:
+                    dup_roll.delete()
+                else:
+                    print dup_roll, "has a leaveslip attached"
+
     def handle(self, *args, **options):
         # print('* Populating rolls...')
         # self._create_rolls()
-        print ('* Looking through rolls...')
-        self._check_rolls()
+        # print ('* Looking through rolls...')
+        # self._check_rolls()
+        self._check_present_rolls()
+        # self.combine_rolls_with_leaveslip()
