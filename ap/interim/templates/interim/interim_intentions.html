@@ -38,12 +38,12 @@ $(document).ready(() => {
   });
 
   $("#add_row").click(() => {
-    let val = parseInt($("#id_itenerary_table tr:last").attr('id').split("_").pop());
+    let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
 
     if (val < size) {
-      $("#id_itenerary_table tr:last").clone().appendTo("#id_itenerary_table");
+      $("#id_itinerary_table tr:last").clone().appendTo("#id_itinerary_table");
       val++;
-      $("#id_itenerary_table tr:last").attr("id","row_" + val);
+      $("#id_itinerary_table tr:last").attr("id","row_" + val);
       $('.datetimepicker').datetimepicker({
         format:'m/d/Y H:i'
       });
@@ -51,9 +51,9 @@ $(document).ready(() => {
   })
 
   $("#delete_row").click(() => {
-    let val = parseInt($("#id_itenerary_table tr:last").attr('id').split("_").pop());
+    let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
     if (val != 0){
-      $("#id_itenerary_table tr:last").remove();
+      $("#id_itinerary_table tr:last").remove();
     }
   })
 
@@ -97,17 +97,17 @@ Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hou
 <form id="id_interim_intentions_form" method="post" action="">
   {% bootstrap_form form %}
   {% csrf_token %}
-  <table class="table table-bordered" id="id_itenerary_table">
+  <table class="table table-bordered" id="id_itinerary_table">
     <tr>
       <th>Start</th>
       <th>End</th>
       <th>Comments</th>
     </tr>
-    {% for iten_form in itenerary_forms %}
+    {% for itin_form in itinerary_forms %}
     <tr id="row_{{forloop.counter0}}">
-      <td>{{iten_form.start}}</td>
-      <td>{{iten_form.end}}</td>
-      <td>{{iten_form.comments}}</td>
+      <td>{{itin_form.start}}</td>
+      <td>{{itin_form.end}}</td>
+      <td>{{itin_form.comments}}</td>
     </tr>
     {% endfor %}
     </table>

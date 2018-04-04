@@ -1,9 +1,9 @@
 from django.views.generic.edit import UpdateView
 
 from aputils.trainee_utils import trainee_from_user
-from interim.models import InterimIntentions, InterimItenerary
-from interim.forms import InterimIntentionsForm, InterimIteneraryForm
-from terms.model import Term
+from interim.models import InterimIntentions, InterimItinerary
+from interim.forms import InterimIntentionsForm, InterimItineraryForm
+from terms.models import Term
 
 from dateutil import parser
 
@@ -19,33 +19,33 @@ class InterimIntentionsView(UpdateView):
     return int_int
 
   def form_valid(self, form):
-    self.update_interim_itenerary(service_attendance=self.get_object(), data=self.request.POST.copy())
+    self.update_interim_itinerary(service_attendance=self.get_object(), data=self.request.POST.copy())
     return super(InterimIntentionsView, self).form_valid(form)
 
-  def update_interim_itenerary(self, interim_intentions, data):
+  def update_interim_itinerary(self, interim_intentions, data):
     start_list = data.pop('start')
     end_list = data.pop('end')
     commments_list = data.pop('comments')
-    InterimItenerary.objects.filter(interim_intentions=interim_intentions).delete()
+    InterimItinerary.objects.filter(interim_intentions=interim_intentions).delete()
 
     for index in range(len(start_list)):
-      iten = InterimItenerary()
-      iten.interim_intentions = interim_intentions
-      iten.start_datetime = parser.parse(start_list[index])
-      iten.end_datetime = parser.parse(end_list[index])
-      iten.task_performed = commments_list[index]
-      iten.save()
+      itin = InterimItinerary()
+      itin.interim_intentions = interim_intentions
+      itin.start_datetime = parser.parse(start_list[index])
+      itin.end_datetime = parser.parse(end_list[index])
+      itin.task_performed = commments_list[index]
+      itin.save()
 
   def get_context_data(self, **kwargs):
     ctx = super(InterimIntentionsView, self).get_context_data(**kwargs)
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Interim Intentions'
-    interim_inteneraries_forms = []
-    interim_inteneraries = InterimItenerary.objects.filter(interim_intentions=self.get_object())
-    if interim_inteneraries.count() == 0:
-      interim_inteneraries_forms.append(InterimIteneraryForm())
+    interim_itineraries_forms = []
+    interim_itineraries = InterimItinerary.objects.filter(interim_intentions=self.get_object())
+    if interim_itineraries.count() == 0:
+      interim_itineraries_forms.append(InterimItineraryForm())
     else:
-      for iten in InterimItenerary.objects.filter(interim_intentions=self.get_object()):
-        interim_inteneraries_forms.append(InterimIteneraryForm(instance=iten))
-    ctx['itenerary_forms'] = interim_inteneraries_forms
+      for itin in InterimItinerary.objects.filter(interim_intentions=self.get_object()):
+        interim_itineraries_forms.append(InterimItineraryForm(instance=itin))
+    ctx['itinerary_forms'] = interim_itineraries_forms
     return ctx

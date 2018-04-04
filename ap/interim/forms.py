@@ -1,17 +1,17 @@
 from django import forms
 
-from interim.models import InterimIntentions, InterimItenerary
+from interim.models import InterimIntentions, InterimItinerary
 from aputils.widgets import DatePicker
 
 
-class InterimIteneraryForm(forms.ModelForm):
+class InterimItineraryForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
-    super(InterimIteneraryForm, self).__init__(*args, **kwargs)
+    super(InterimItineraryForm, self).__init__(*args, **kwargs)
     self.fields['start'].required = True
     self.fields['end'].required = True
 
   class Meta:
-    model = InterimItenerary
+    model = InterimItinerary
     fields = ["start", "end", "comments", ]
     widgets = {
       "start_datetime": DatePicker(),
