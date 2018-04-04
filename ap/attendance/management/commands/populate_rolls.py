@@ -113,7 +113,7 @@ class Command(BaseCommand):
             attached_IS = IndividualSlip.objects.filter(rolls=r)
             if attached_IS.count() == 0 :
                 print r
-
+                
     def combine_rolls_with_leaveslip(self):
         print ('* Looking at rolls with present status whichs should be attached to a leaveslip, and a duplicate roll with a non-present status for the same event, date, and trainee. Combining them')
         for r in Roll.objects.filter(status='P'):
@@ -129,6 +129,7 @@ class Command(BaseCommand):
                     dup_roll.delete()
                 else:
                     print dup_roll, "has a leaveslip attached"
+
 
     def leaveslips_sift(self):
         print ('* Looking through IndividualSlips, making sure the rolls attached points to the trainee that submitted it')
@@ -156,11 +157,10 @@ class Command(BaseCommand):
                         print LS, actual_roll
 
     def handle(self, *args, **options):
-        # self._check_present_rolls()
         # print('* Populating rolls...')
         # self._create_rolls()
         # print ('* Looking through rolls...')
         # self._check_rolls()
         # self.combine_rolls_with_leaveslip()
-        self.leaveslips_sift()
         # self.rolls_submittedby_empty()
+        self._check_present_rolls()
