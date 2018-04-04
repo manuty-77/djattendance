@@ -83,13 +83,21 @@ $(document).ready(() => {
 {% endif %}
 
 
-<p>Intsructions.</p>
+<h4>Contact Information:</h4>
+<p>Please verify that your contact information is up to date..</p>
 
 <br><br>
 
 <form id="id_interim_intentions_form" method="post" action="">
   {% bootstrap_form form %}
   {% csrf_token %}
+  <h4>Interim Itinerary:</h2>
+<p>Please be thorough in filling out the schedule below and include brief descriptions, locations with pertinent addresses, phone numbers, etc. for our ease in contacting you. The following return dates have been set to help you have a smooth transition into the next term, to give you additional time to unpack and settle into your house before pre-training, and to prepare your house for incoming trainees.<br/>
+
+    Second year trainees return by Saturday, February 17 at 10:00am.<br/>
+    First year trainees return by Saturday, February 17 at 3:00pm.<br/>
+
+You may arrive as early as Friday, February 16, but not later than the date and time above. Those who arrive before Friday, February 16 must be available to serve. The next term of the Training begins on Lord's Day, February 18</p>
   <table class="table table-bordered" id="id_itinerary_table">
     <tr>
       <th>Start</th>
