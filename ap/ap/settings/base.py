@@ -181,6 +181,7 @@ APPS = (
     'graduation',
     'hc',
     'house_requests',
+    'interim',
     'leaveslips',
     'lifestudies',
     'meal_seating',

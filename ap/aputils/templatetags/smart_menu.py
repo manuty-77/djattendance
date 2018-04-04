@@ -114,6 +114,7 @@ def generate_menu(context):
       ],
       trainee_only=[
           SubMenuItem(name='View Read Announcements', url='announcements:announcements-read'),
+          SubMenuItem(name='Interim intentions', url='interim:interim_intentions'),
       ],
       specific=[
           SubMenuItem(name='Service Scheduling', permission='services.add_service', url='services:services_view', condition=user.has_group(['service_schedulers'])),

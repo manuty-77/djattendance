@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+{% load common_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+{{ block.super }}
+<style>
+  #submit{
+    display: inline-block;
+    float: left;
+  }
+
+  #delete_row{
+    display: inline-block;
+    float: right;
+  }
+
+  #add_row{
+    display: inline-block;
+    float: right;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+
+$(document).ready(() => {
+
+  const size = 10;
+
+  $('.datepicker').datepicker({
+    dateFormat: "m/d/Y",
+  });
+
+  $("#add_row").click(() => {
+    let val = parseInt($("#id_itenerary_table tr:last").attr('id').split("_").pop());
+
+    if (val < size) {
+      $("#id_itenerary_table tr:last").clone().appendTo("#id_itenerary_table");
+      val++;
+      $("#id_itenerary_table tr:last").attr("id","row_" + val);
+      $('.datetimepicker').datetimepicker({
+        format:'m/d/Y H:i'
+      });
+    }
+  })
+
+  $("#delete_row").click(() => {
+    let val = parseInt($("#id_itenerary_table tr:last").attr('id').split("_").pop());
+    if (val != 0){
+      $("#id_itenerary_table tr:last").remove();
+    }
+  })
+
+  $("#id_interim_intentions_form").submit(function(e) {
+    flashAjaxStatus()
+  });
+
+});
+
+
+
+</script>
+{% endblock %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+{% if form.errors %}
+<!-- Error messaging -->
+  <div id="errors">
+    <div class="inner">
+      <p>There were some errors in the information you entered. Please correct the following:</p>
+      {{ form.non_field_errors }}
+      <ul>
+        {% for field in form %}
+          {% if field.errors %}<li>{{ field.label }}: {{ field.errors|striptags }}</li>{% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+<!-- /Error messaging -->
+{% endif %}
+
+
+<p>You can just add a comment on "tasked performed" column by itself (ie: sick/service/etc).
+Also, posting hours again overwrites the old submission so you can post more than once.
+Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hours and no tasks performed will be deleted on save.</p>
+
+<br><br>
+
+<form id="id_interim_intentions_form" method="post" action="">
+  {% bootstrap_form form %}
+  {% csrf_token %}
+  <table class="table table-bordered" id="id_itenerary_table">
+    <tr>
+      <th>Start</th>
+      <th>End</th>
+      <th>Comments</th>
+    </tr>
+    {% for iten_form in itenerary_forms %}
+    <tr id="row_{{forloop.counter0}}">
+      <td>{{iten_form.start}}</td>
+      <td>{{iten_form.end}}</td>
+      <td>{{iten_form.comments}}</td>
+    </tr>
+    {% endfor %}
+    </table>
+
+    <button type="submit" class="btn btn-primary btn-save" id="submit">{{button_label|safe}}</button>
+  </form>
+  <button class="btn btn-primary" id="delete_row">Delete</button>
+  <button class="btn btn-primary" id="add_row">Add</button>
+{% endblock %}
