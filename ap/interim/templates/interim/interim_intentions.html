@@ -149,17 +149,17 @@ $(document).ready(() => {
     <h4>Interim Itinerary:</h2>
     <p>Please be thorough in filling out the schedule below and include brief descriptions, locations with pertinent addresses, phone numbers, etc. for our ease in contacting you. The following return dates have been set to help you have a smooth transition into the next term, to give you additional time to unpack and settle into your house before pre-training, and to prepare your house for incoming trainees.<br/>
 
-    Second year trainees return by Saturday, February 17 at 10:00am.<br/>
-    First year trainees return by Saturday, February 17 at 3:00pm.<br/></p>
+    Second year trainees return by Saturday, August 11 at 10:00am.<br/>
+    First year trainees return by Saturday, August 11 at 3:00pm.<br/></p>
 
-    <p>You may arrive as early as Friday, February 16, but not later than the date and time above. Those who arrive before Friday, February 16 must be available to serve. The next term of the Training begins on Lord's Day, February 18</p>
+    <p>You may arrive as early as Friday, August 10, but not later than the date and time above. Those who arrive before Friday, August 10 must be available to serve. The next term of the Training begins on Lord's Day, August 12</p>
     <div class="row">
       <div class="col-md-12">
         <table class="table table-bordered" id="id_itinerary_table">
           <tr>
-            <th>Start</th>
-            <th>End</th>
-            <th>Comments</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Notes/Comments</th>
           </tr>
           {% for itin_form in itinerary_forms %}
           <tr id="row_{{forloop.counter0}}">
@@ -171,17 +171,15 @@ $(document).ready(() => {
         </table>
       </div>
       <div class="col-md-12">
-        <button class="btn btn-primary" id="delete_row">Delete</button>
-        <button class="btn btn-primary" id="add_row">Add</button>
+        <button type="button" class="btn btn-primary" id="delete_row">Delete</button>
+        <button type="button" class="btn btn-primary" id="add_row">Add</button>
       </div>
     </div>
   </div>
   <div class="panel">
+    <h4>{{form.intent.label}}:</h4>
     <div class="row">
-      <div class="col-md-2">
-        {{form.intent.label}}:
-      </div>
-      <div class="col-md-10">
+      <div class="col-md-12">
         {% for c in form.intent %}
           {{c}}&nbsp;
         {% endfor %}

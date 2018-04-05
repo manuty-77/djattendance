@@ -21,8 +21,16 @@ class InterimItineraryForm(forms.ModelForm):
 
 class InterimIntentionsForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
-    # worker = kwargs.pop('worker')
     super(InterimIntentionsForm, self).__init__(*args, **kwargs)
+    self.fields['cell_phone'].label = 'Cell Phone'
+    self.fields['email'].label = 'E-mail'
+    self.fields['home_phone'].label = 'Home Phone'
+    self.fields['home_locality'].label = 'Home Locality'
+    self.fields['home_address'].label = 'Home Address'
+    self.fields['home_city'].label = 'City'
+    self.fields['home_state'].label = 'State'
+    self.fields['home_zip'].label = 'Zip'
+    self.fields['intent'].label = 'Intent to Return'
 
   class Meta:
     model = InterimIntentions
