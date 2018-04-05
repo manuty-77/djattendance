@@ -82,39 +82,112 @@ $(document).ready(() => {
 <!-- /Error messaging -->
 {% endif %}
 
-
-<h4>Contact Information:</h4>
-<p>Please verify that your contact information is up to date..</p>
-
-<br><br>
-
 <form id="id_interim_intentions_form" method="post" action="">
-  {% bootstrap_form form %}
   {% csrf_token %}
-  <h4>Interim Itinerary:</h2>
-<p>Please be thorough in filling out the schedule below and include brief descriptions, locations with pertinent addresses, phone numbers, etc. for our ease in contacting you. The following return dates have been set to help you have a smooth transition into the next term, to give you additional time to unpack and settle into your house before pre-training, and to prepare your house for incoming trainees.<br/>
+  <div class="panel">
+    <h4>Contact Information:</h4>
+    <p>Please verify that your contact information is up to date.</p><br>
+    <div class="row">
+      <div class="col-md-2">
+        {{form.cell_phone.label}}:
+      </div>
+      <div class="col-md-4">
+        {{form.cell_phone}}
+      </div>
+      <div class="col-md-2">
+        {{form.home_phone.label}}:
+      </div>
+      <div class="col-md-4">
+        {{form.home_phone}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+        {{form.email.label}}:
+      </div>
+      <div class="col-md-4">
+        {{form.email}}
+      </div>
+      <div class="col-md-2">
+        {{form.home_locality.label}}:
+      </div>
+      <div class="col-md-4">
+        {{form.home_locality}}
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col-md-2">
+        {{form.home_address.label}}:
+      </div>
+      <div class="col-md-10">
+        {{form.home_address}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+        {{form.home_city.label}}:
+      </div>
+      <div class="col-md-2">
+        {{form.home_city}}
+      </div>
+      <div class="col-md-2">
+        {{form.home_state.label}}:
+      </div>
+      <div class="col-md-2">
+        {{form.home_state}}
+      </div>
+      <div class="col-md-2">
+        {{form.home_zip.label}}:
+      </div>
+      <div class="col-md-2">
+        {{form.home_zip}}
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h4>Interim Itinerary:</h2>
+    <p>Please be thorough in filling out the schedule below and include brief descriptions, locations with pertinent addresses, phone numbers, etc. for our ease in contacting you. The following return dates have been set to help you have a smooth transition into the next term, to give you additional time to unpack and settle into your house before pre-training, and to prepare your house for incoming trainees.<br/>
 
     Second year trainees return by Saturday, February 17 at 10:00am.<br/>
-    First year trainees return by Saturday, February 17 at 3:00pm.<br/>
+    First year trainees return by Saturday, February 17 at 3:00pm.<br/></p>
 
-You may arrive as early as Friday, February 16, but not later than the date and time above. Those who arrive before Friday, February 16 must be available to serve. The next term of the Training begins on Lord's Day, February 18</p>
-  <table class="table table-bordered" id="id_itinerary_table">
-    <tr>
-      <th>Start</th>
-      <th>End</th>
-      <th>Comments</th>
-    </tr>
-    {% for itin_form in itinerary_forms %}
-    <tr id="row_{{forloop.counter0}}">
-      <td>{{itin_form.start}}</td>
-      <td>{{itin_form.end}}</td>
-      <td>{{itin_form.comments}}</td>
-    </tr>
-    {% endfor %}
-    </table>
-
+    <p>You may arrive as early as Friday, February 16, but not later than the date and time above. Those who arrive before Friday, February 16 must be available to serve. The next term of the Training begins on Lord's Day, February 18</p>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-bordered" id="id_itinerary_table">
+          <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Comments</th>
+          </tr>
+          {% for itin_form in itinerary_forms %}
+          <tr id="row_{{forloop.counter0}}">
+            <td>{{itin_form.start}}</td>
+            <td>{{itin_form.end}}</td>
+            <td>{{itin_form.comments}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <div class="col-md-12">
+        <button class="btn btn-primary" id="delete_row">Delete</button>
+        <button class="btn btn-primary" id="add_row">Add</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row">
+      <div class="col-md-2">
+        {{form.intent.label}}:
+      </div>
+      <div class="col-md-10">
+        {% for c in form.intent %}
+          {{c}}&nbsp;
+        {% endfor %}
+      </div>
+    </div>
+  </div>
     <button type="submit" class="btn btn-primary btn-save" id="submit">{{button_label|safe}}</button>
   </form>
-  <button class="btn btn-primary" id="delete_row">Delete</button>
-  <button class="btn btn-primary" id="add_row">Add</button>
 {% endblock %}

@@ -27,3 +27,6 @@ class InterimIntentionsForm(forms.ModelForm):
   class Meta:
     model = InterimIntentions
     fields = ["cell_phone", "email", "home_phone", "home_locality", "home_address", "home_city", "home_state", "home_zip", "intent"]
+    widgets = {
+      "intent": forms.RadioSelect,
+    }
