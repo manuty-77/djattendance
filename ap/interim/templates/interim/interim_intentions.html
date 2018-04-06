@@ -149,10 +149,10 @@ $(document).ready(() => {
     <h4>Interim Itinerary:</h2>
     <p>Please be thorough in filling out the schedule below and include brief descriptions, locations with pertinent addresses, phone numbers, etc. for our ease in contacting you. The following return dates have been set to help you have a smooth transition into the next term, to give you additional time to unpack and settle into your house before pre-training, and to prepare your house for incoming trainees.<br/>
 
-    Second year trainees return by Saturday, August 11 at 10:00am.<br/>
-    First year trainees return by Saturday, August 11 at 3:00pm.<br/></p>
+    Second year trainees return by {{admin.date_2yr_return|date:'l, F d'}} at {{admin.date_2yr_return|date:'g:i a'}}<br/>
+    First year trainees return by {{admin.date_1yr_return|date:'l, F d'}} at {{admin.date_1yr_return|date:'g:i a'}}<br/></p>
 
-    <p>You may arrive as early as Friday, August 10, but not later than the date and time above. Those who arrive before Friday, August 10 must be available to serve. The next term of the Training begins on Lord's Day, August 12</p>
+    <p>You may arrive as early as {{admin.earliest_arrival_date|date:'l, F d'}} but not later than the date and time above. Those who arrive before {{admin.earliest_arrival_date|date:'l, F d'}} must be available to serve. The next term of the Training begins on {{admin.term_begin_date|date:'l, F d'}}.</p>
     <div class="row">
       <div class="col-md-12">
         <table class="table table-bordered" id="id_itinerary_table">

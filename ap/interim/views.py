@@ -1,9 +1,11 @@
 from django.views.generic.edit import UpdateView
 
 from aputils.trainee_utils import trainee_from_user
-from interim.models import InterimIntentions, InterimItinerary
-from interim.forms import InterimIntentionsForm, InterimItineraryForm
+from interim.models import InterimIntentions, InterimItinerary, InterimIntentionsAdmin
+from interim.forms import InterimIntentionsForm, InterimItineraryForm, InterimIntentionsAdminForm
 from terms.models import Term
+
+from braces.views import GroupRequiredMixin
 
 from dateutil import parser
 
@@ -14,8 +16,8 @@ class InterimIntentionsView(UpdateView):
   form_class = InterimIntentionsForm
 
   def get_object(self, queryset=None):
-    term = Term.current_term()
-    int_int, created = InterimIntentions.objects.get_or_create(trainee=trainee_from_user(self.request.user), term=term)
+    admin, created = InterimIntentionsAdmin.objects.get_or_create(term=Term.current_term())
+    int_int, created = InterimIntentions.objects.get_or_create(trainee=trainee_from_user(self.request.user), admin=admin)
     return int_int
 
   def form_valid(self, form):
@@ -38,8 +40,7 @@ class InterimIntentionsView(UpdateView):
 
   def get_context_data(self, **kwargs):
     ctx = super(InterimIntentionsView, self).get_context_data(**kwargs)
-    ctx['button_label'] = 'Submit'
-    ctx['page_title'] = 'Interim Intentions'
+    admin, created = InterimIntentionsAdmin.objects.get_or_create(term=Term.current_term())
     interim_itineraries_forms = []
     interim_itineraries = InterimItinerary.objects.filter(interim_intentions=self.get_object())
     if interim_itineraries.count() == 0:
@@ -47,5 +48,37 @@ class InterimIntentionsView(UpdateView):
     else:
       for itin in InterimItinerary.objects.filter(interim_intentions=self.get_object()):
         interim_itineraries_forms.append(InterimItineraryForm(instance=itin))
+    ctx['button_label'] = 'Submit'
+    ctx['page_title'] = 'Interim Intentions'
     ctx['itinerary_forms'] = interim_itineraries_forms
+    ctx['admin'] = admin
+
+    return ctx
+
+
+class InterimIntentionsAdminView(UpdateView, GroupRequiredMixin):
+  model = InterimIntentionsAdmin
+  form_class = InterimIntentionsAdminForm
+  template_name = 'interim/interim_intentions_admin.html'
+  group_required = ['training_assistant']
+
+  def get_object(self, queryset=None):
+    obj, created = self.model.objects.get_or_create(term=Term.current_term())
+    return obj
+
+  def get(self, request, *args, **kwargs):
+    self.object = self.get_object()
+    return super(InterimIntentionsAdminView, self).get(request, *args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    self.object = self.get_object()
+    return super(InterimIntentionsAdminView, self).post(request, *args, **kwargs)
+
+  def form_valid(self, form):
+    return super(InterimIntentionsAdminView, self).form_valid(form)
+
+  def get_context_data(self, **kwargs):
+    ctx = super(InterimIntentionsAdminView, self).get_context_data(**kwargs)
+    ctx['page_title'] = "Interim Intentions Admin"
+    ctx['button_label'] = 'Save'
     return ctx

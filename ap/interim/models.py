@@ -9,6 +9,26 @@ from terms.models import Term
 """
 
 
+class InterimIntentionsAdmin(models.Model):
+
+  term = models.ForeignKey(Term, null=True, blank=True, on_delete=models.SET_NULL)
+
+  open_time = models.DateTimeField(null=True, blank=True)
+
+  close_time = models.DateTimeField(null=True, blank=True)
+
+  date_1yr_return = models.DateTimeField(null=True, blank=True)
+
+  date_2yr_return = models.DateTimeField(null=True, blank=True)
+
+  earliest_arrival_date = models.DateField(null=True, blank=True)
+
+  term_begin_date = models.DateField(null=True, blank=True)
+
+  def get_absolute_url(self):
+    return reverse('interim:interim_intentions_admin')
+
+
 class InterimIntentions(models.Model):
   INTENT_CHOICES = (
       ('R', 'Returning'),
@@ -18,7 +38,7 @@ class InterimIntentions(models.Model):
 
   trainee = models.ForeignKey(Trainee, null=True, on_delete=models.SET_NULL)
 
-  term = models.ForeignKey(Term, null=True, blank=True, on_delete=models.SET_NULL)
+  admin = models.ForeignKey(InterimIntentionsAdmin, null=True, blank=True, on_delete=models.SET_NULL)
 
   cell_phone = models.CharField(max_length=50, blank=True, default='555-555-5555')
 

@@ -99,6 +99,7 @@ def generate_cards(context):
             CardLink(title="Graduation", url=reverse('graduation:grad-admin')),
             CardLink(title="Trainee Information", url=reverse('trainee_information')),
             CardLink(title="Desginated Services Viewer", url=reverse('services:designated_services_viewer')),
+            CardLink(title="Interim Intetions", url=reverse('interim:interim_intentions_admin')),
         ]
     )
 

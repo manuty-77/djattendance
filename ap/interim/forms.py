@@ -1,7 +1,7 @@
 from django import forms
 
-from interim.models import InterimIntentions, InterimItinerary
-from aputils.widgets import DatePicker
+from interim.models import InterimIntentions, InterimItinerary, InterimIntentionsAdmin
+from aputils.widgets import DatePicker, DatetimePicker
 
 
 class InterimItineraryForm(forms.ModelForm):
@@ -37,4 +37,25 @@ class InterimIntentionsForm(forms.ModelForm):
     fields = ["cell_phone", "email", "home_phone", "home_locality", "home_address", "home_city", "home_state", "home_zip", "intent"]
     widgets = {
       "intent": forms.RadioSelect,
+    }
+
+
+class InterimIntentionsAdminForm(forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super(InterimIntentionsAdminForm, self).__init__(*args, **kwargs)
+    self.fields['date_1yr_return'].required = True
+    self.fields['date_2yr_return'].required = True
+    self.fields['earliest_arrival_date'].required = True
+    self.fields['term_begin_date'].required = True
+
+  class Meta:
+    model = InterimIntentionsAdmin
+    fields = ["open_time", "close_time", "date_1yr_return", "date_2yr_return", "earliest_arrival_date", "term_begin_date"]
+    widgets = {
+      "open_time": DatetimePicker(),
+      "close_time": DatetimePicker(),
+      "date_1yr_return": DatetimePicker(),
+      "date_2yr_return": DatetimePicker(),
+      "earliest_arrival_date": DatePicker(),
+      "term_begin_date": DatePicker()
     }
