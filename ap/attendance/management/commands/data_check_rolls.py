@@ -15,13 +15,28 @@ class Command(BaseCommand):
     f = open('../mislink_rolls' + right_now + '.txt', 'w')
     output = '{0}: {1}-- Submitted by: {2} \n'
     rolls = Roll.objects.all().order_by('event__id', 'date')
+    ct = Term.current_term()
     for r in rolls:
       try:
+        # it's tricky here cause you need to make sure the event exists on the right weeks.
+        # there may be a roll with date in the 5th week but the schedule only has that event up until the 3rd week
         trainees = r.event.schedules.all().values('trainees')
         tr_ids = [t['trainees'] for t in trainees]
         if r.trainee.id not in tr_ids:
           print output.format(r.id, r, r.submitted_by)
           f.write(output.format(r.id, r, r.submitted_by))
+        else:
+          schedules = r.event.schedules.filter(trainees__in=[r.trainee]).values('weeks')
+          its_good = False
+          for sched in schedules:
+            if ct.term_week_of_date(r.date) in sched['weeks']:
+              its_good = True
+              break
+          if not its_good:
+            print 'Roll on wrong schedule'
+            print output.format(r.id, r, r.submitted_by)
+            f.write('Roll on wrong schedule\n')
+            f.write(output.format(r.id, r, r.submitted_by))
 
       except Exception as e:
         print output.format(r.id, e, r.submitted_by)
@@ -66,6 +81,6 @@ class Command(BaseCommand):
     print('* Pulling Rolls with mislinked Trainee...')
     self._mislink_rolls()
     print('* Pulling "present" Rolls with no leavslips attached...')
-    self._ghost_rolls()
+    #self._ghost_rolls()
     print('* Pulling leaveslips with rolls that do not belong to submitting trainee')
-    self._mislink_leaveslips()
+    #self._mislink_leaveslips()
