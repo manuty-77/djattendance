@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from attendance.models import Roll
-from schedules.models import Event, Schedule
 from accounts.models import Trainee
 from terms.models import Term
 from datetime import datetime
@@ -63,24 +62,28 @@ class Command(BaseCommand):
   def _mislink_leaveslips(self):
     # Pull all leaveslips submitted by trainee X and has rolls not for trainee X
     right_now = datetime.now().strftime("%m%d%Y_%H%M%S")
-    f = open('../mislink_leaveslips' + right_now + '.txt', 'w')
-    trainees = Trainee.objects.all()
     output = '[{0} - {1}]: [{2} - {3}]\n'
-    for t in trainees:
-      try:
-        for slip in t.individualslips.all():
+    output2 = 'For Slip {0}: Possible Roll: {1} [ID: {2}]\n'
+
+    def find_possible_rolls(roll, slip):
+      # finds possible rolls for trainee X that matches the attached roll
+      return Roll.objects.filter(event=roll.event, date=roll.date, trainee=slip.trainee)
+
+    with open('../mislink_leaveslips' + right_now + '.txt', 'w') as f:
+      for slip in IndividualSlip.all():
+        try:
           for roll in slip.rolls.all():
-            if t.id != roll.trainee.id:
-              print output.format(slip.id, slip, roll.id, roll)
-              f.write(output.format(slip.id, slip, roll.id, roll))
-      except Exception as e:
-        print(e)
-        f.write(output.format(e, '!', '!', '!'))
+            if slip.trainee.id != roll.trainee.id:
+              out(output.format(slip.id, slip, roll.id, roll), f)
+              for pr in find_possible_rolls(roll, slip):
+                out(output2.format(slip.id, pr, pr.id), f)
+        except Exception as e:
+          out(output.format(slip, '!', e, '!'), f)
 
   def handle(self, *args, **options):
     print('* Pulling Rolls with mislinked Trainee...')
-    #self._mislink_rolls()
+    self._mislink_rolls()
     print('* Pulling "present" Rolls with no leavslips attached...')
     self._ghost_rolls()
     print('* Pulling leaveslips with rolls that do not belong to submitting trainee')
-    #self._mislink_leaveslips()
+    self._mislink_leaveslips()
