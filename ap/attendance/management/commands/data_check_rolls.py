@@ -9,39 +9,34 @@ from leaveslips.models import IndividualSlip
 
 class Command(BaseCommand):
   # to use: python ap/manage.py data_check_rolls --settings=ap.settings.dev
+
   def _mislink_rolls(self):
     # Pulls all rolls that has a mislink, the event that the rolls points to does not exist in the trainee's active schedule
     right_now = datetime.now().strftime("%m%d%Y_%H%M%S")
-    f = open('../mislink_rolls' + right_now + '.txt', 'w')
-    output = '{0}: {1}-- Submitted by: {2} \n'
-    rolls = Roll.objects.all().order_by('event__id', 'date')
-    ct = Term.current_term()
-    for r in rolls:
-      try:
-        # it's tricky here cause you need to make sure the event exists on the right weeks.
-        # there may be a roll with date in the 5th week but the schedule only has that event up until the 3rd week
-        trainees = r.event.schedules.all().values('trainees')
-        tr_ids = [t['trainees'] for t in trainees]
-        if r.trainee.id not in tr_ids:
-          print output.format(r.id, r, r.submitted_by)
-          f.write(output.format(r.id, r, r.submitted_by))
-        else:
-          schedules = r.event.schedules.filter(trainees__in=[r.trainee]).values('weeks')
-          its_good = False
-          for sched in schedules:
-            if ct.term_week_of_date(r.date) in sched['weeks']:
-              its_good = True
+    with open('../mislink_rolls' + right_now + '.txt', 'w') as f:
+      rolls = Roll.objects.all().order_by('event__id', 'date')
+      ct = Term.current_term()
+      output = '{0}: {1}-- Submitted by: {2} \n'
+      for r in rolls:
+        try:
+          schedules = r.event.schedules.all()
+          for s in schedules:
+            if r.trainee.id not in s.trainees.values_list('id', flat=True):
+              print 'Trainee DNM:'
+              print output.format(str(r.id), r, r.submitted_by)
+              f.write('Trainee DNM: ')
+              f.write(output.format(str(r.id), r, r.submitted_by))
               break
-          if not its_good:
-            print 'Roll on wrong schedule'
-            print output.format(r.id, r, r.submitted_by)
-            f.write('Roll on wrong schedule\n')
-            f.write(output.format(r.id, r, r.submitted_by))
-
-      except Exception as e:
-        print output.format(r.id, e, r.submitted_by)
-        f.write(output.format(r.id, e, r.submitted_by))
-    f.close()
+            else:
+              if str(ct.term_week_of_date(r.date)) not in s.weeks:
+                print 'Roll on wrong week'
+                print output.format(str(r.id), r, r.submitted_by)
+                f.write('Wrong Week: ')
+                f.write(output.format(str(r.id), r, r.submitted_by))
+                break
+        except Exception as e:
+          print output.format(str(r.id), e, r.submitted_by)
+          f.write(output.format(str(r.id), e, r.submitted_by))
 
   def _ghost_rolls(self):
     # Pull all rolls that have a present status with no leavslips attached
