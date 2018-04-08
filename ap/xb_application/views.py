@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.views.generic.edit import UpdateView
 
-from .models import XBApplication
+from .models import *
 from .forms import XBApplicationForm
 from aputils.trainee_utils import is_trainee, trainee_from_user
 from terms.models import Term
@@ -14,10 +14,10 @@ class XBApplicationView(UpdateView):
   template_name = 'xb_application/application_form.html'
 
   def get_object(self, queryset=None):
-    if is_trainee(self.request.user):
-      obj, created = XBApplication.objects.get_or_create(trainee=trainee_from_user(self.request.user))
-      return obj
-    return None
+    admin, created = XBAdmin.objects.get_or_create(term=Term.current_term())
+    obj, created = XBApplication.objects.get_or_create(trainee=self.request.user, xb_admin=admin)
+    return obj
+
 
   def get(self, request, *args, **kwargs):
     self.object = self.get_object()
@@ -42,10 +42,10 @@ class XBApplicationView(UpdateView):
     ctx['last_updated'] = self.object.last_updated
     ctx['page_title'] = 'FTTA-XB Application'
     ctx['term'] = Term.next_term()
-    if self.object.due_date:
-      ctx['due_date'] = self.object.due_date
+    if self.object.xb_admin.xb_due_date:
+      ctx['due_date'] = self.object.xb_admin.xb_due_date
     today = datetime.now().date()
-    if self.object.show_status == 'SHOW' or today > self.object.due_date:
+    if self.object.xb_admin.xb_show_status == 'SHOW' or today > self.object.xb_admin.xb_due_date:
       ctx['read_only'] = True
     if not self.object.submitted:
       ctx['save_button'] = '<button type="submit" class="btn btn-primary btn-save">Save</button>'

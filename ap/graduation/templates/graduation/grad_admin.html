@@ -148,7 +148,7 @@
           <tr>
             <th><label for="{{xb_form.xb_show_status.id_for_label}}" data-toggle="tooltip" data-placement="right" title="Report"><a href="#">{{xb_form.xb_show_status.label}}</a></label></th>
             <th>{{xb_form.xb_show_status}}</th>
-            <th><label for="{{xb_form.xb_due_date.id_for_label}}" data-toggle="tooltip" data-placement="right" title="Report"><a href="#">{{xb_form.xb_due_date.label}}</a></label></th>
+            <th><label for="{{xb_form.xb_due_date.id_for_label}}" data-toggle="tooltip" data-placement="right" title="Report"><a href="{% url 'xb:xb-application' %}">{{xb_form.xb_due_date.label}}</a></label></th>
             <th>{{xb_form.xb_due_date}}</th>
           </tr>
         </table>
