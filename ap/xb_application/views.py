@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.views.generic.edit import UpdateView
+from django.views.generic import ListView
 
 from .models import *
 from .forms import XBApplicationForm
@@ -36,7 +37,7 @@ class XBApplicationView(UpdateView):
   def form_valid(self, form):
     return super(XBApplicationView, self).form_valid(form)
 
-  def get_context_data(self, **kwargs):    
+  def get_context_data(self, **kwargs):
     ctx = super(XBApplicationView, self).get_context_data(**kwargs)
     self.object = self.get_object()
     ctx['submitted'] = self.object.submitted
@@ -52,3 +53,16 @@ class XBApplicationView(UpdateView):
       ctx['save_button'] = '<button type="submit" class="btn btn-primary btn-save">Save</button>'
       ctx['submit_button'] = '<button type="submit" class="btn btn-primary btn-save" name="submit">Submit</button>'
     return ctx
+
+class XBReportView(ListView):
+  model = XBApplication
+  template_name = 'xb_application/xb_report.html'
+
+  def get_queryset(self):
+    return self.model.objects.all()
+
+  def get_context_data(self, **kwargs):
+    ctx = super(XBReportView, self).get_context_data(**kwargs)
+    ctx['page_title'] = 'FTTA-XB Application Report List'
+    return ctx
+
