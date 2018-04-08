@@ -13,29 +13,30 @@ class XBApplicationView(UpdateView):
   form_class = XBApplicationForm
   template_name = 'xb_application/application_form.html'
 
-  def get_object(self, queryset=None):
+  def get_object(self):
+    # the post method would remove the foreign key link, so there's the need to do this to ensure the foreign key stays attached
     admin, created = XBAdmin.objects.get_or_create(term=Term.current_term())
-    obj, created = XBApplication.objects.get_or_create(trainee=self.request.user, xb_admin=admin)
-    return obj
-
-
-  def get(self, request, *args, **kwargs):
-    self.object = self.get_object()
-    return super(XBApplicationView, self).get(request, *args, **kwargs)
+    xbApp = XBApplication.objects.filter(trainee=self.request.user).first()
+    if not xbApp:
+      xbApp = XBApplication(trainee=self.request.user, xb_admin=admin)
+    else:
+      xbApp.xb_admin = admin
+      xbApp.save()
+    return xbApp
 
   def post(self, request, *args, **kwargs):
     self.object = self.get_object()
     if 'submit' in request.POST:
       self.object.submitted = True
     self.object.last_updated = datetime.now()
-    self.object.date_submitted = self.object.last_updated
+    self.object.date_submitted = self.object.last_updated    
     self.object.save()
     return super(XBApplicationView, self).post(request, *args, **kwargs)
 
   def form_valid(self, form):
     return super(XBApplicationView, self).form_valid(form)
 
-  def get_context_data(self, **kwargs):
+  def get_context_data(self, **kwargs):    
     ctx = super(XBApplicationView, self).get_context_data(**kwargs)
     self.object = self.get_object()
     ctx['submitted'] = self.object.submitted

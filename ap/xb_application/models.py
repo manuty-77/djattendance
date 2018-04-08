@@ -168,7 +168,11 @@ class XBApplication(models.Model):
   last_updated = models.DateTimeField(null=True, blank=True)
 
   def __unicode__(self):
-    return "[%s] - [Submitted: %s]" % (self.trainee, self.submitted)
+    if self.trainee:
+      return "[%s] - [Submitted: %s]" % (self.trainee, self.submitted)
+    else:
+      return "[None] - [Submitted: %s]" % (self.submitted)
+
 
   def get_absolute_url(self):
     return reverse('xb:xb-application')

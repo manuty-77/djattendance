@@ -113,7 +113,7 @@
     }
 
     function narrative_wordcount(){
-      $("form").submit(function () {
+      $("button[name='submit']").click(function () {
         word_count = $("#id_narrative").val().split(" ").length;
         if (word_count < 501){
           $('#id_narrative').fadeIn().html('').css("border","1px solid red");
@@ -157,8 +157,7 @@
 
       {% if read_only %}
         $('#id_xb_form *').prop("disabled", true);
-      {% endif %}   
-      $('.datepicker').datepicker();
+      {% endif %}
       
     });
   </script>
