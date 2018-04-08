@@ -26,6 +26,9 @@ class TestimonyForm(GenericModelForm):
 
 
 class ConsiderationForm(GenericModelForm):
+  def __init__(self, *args, **kwargs):
+    super(ConsiderationForm, self).__init__(*args, **kwargs)
+    self.fields['financial'].required = False
 
   class Meta(GenericModelForm.Meta):
     model = Consideration
