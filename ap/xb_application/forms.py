@@ -6,7 +6,7 @@ from aputils.widgets import DatePicker
 class XBApplicationForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super(XBApplicationForm, self).__init__(*args, **kwargs)
-    self.fields['name'].label = "Name (First and Last)"
+    self.fields['applicant_name'].label = "Name (First and Last)"
     self.fields['address'].label = "Home address"
     self.fields['automobile'].label = "Do you plan to bring an automobile?"
     self.fields['seats'].label = "If yes, how many seats including driver"
@@ -24,13 +24,6 @@ class XBApplicationForm(forms.ModelForm):
     self.fields['support_church'].label = "Church"
     self.fields['support_family'].label = "Family/Friends"
     self.fields['support_other'].label = "Other"
-
-  SUPPORT_CHOICES = (
-      ('Y', 'Yourself'),
-      ('C', 'Church'),
-      ('F', 'Family'),
-      ('O', 'Other'),
-  )
 
   class Meta:
     model = XBApplication
