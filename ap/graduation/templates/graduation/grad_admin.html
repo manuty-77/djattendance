@@ -60,6 +60,14 @@
 
       hide_or_show_all();
       $( "select" ).change((e) => hide_or_show_element(e.target));
+
+      $('#id_xb_due_date').datepicker({
+        changeMonth: true,
+        changeYear: true,
+      });
+
+
+
     });
   </script>
 {% endblock %}
