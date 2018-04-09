@@ -131,33 +131,33 @@ class Command(BaseCommand):
     # Pull all leaveslips submitted by trainee X and has rolls not for trainee X
     right_now = datetime.now().strftime("%m%d%Y_%H%M%S")
     output = '[{0} - {1}]: [{2} - {3}]\n'
-    output2 = 'For Slip {0}: Possible Roll: {1} [ID: {2}]\n'
+    output2 = 'For Slip {0}: Possible Roll: {1} [ID: {2}] By: {3}\n'
 
     def find_possible_rolls(roll, slip):
       # finds possible rolls for trainee X that matches the attached roll
       return Roll.objects.filter(event=roll.event, date=roll.date, trainee=slip.trainee)
 
     with open('../mislink_leaveslips' + right_now + '.txt', 'w') as f:
-      for slip in IndividualSlip.all():
+      for slip in IndividualSlip.objects.all():
         try:
           for roll in slip.rolls.all():
             if slip.trainee.id != roll.trainee.id:
               out(output.format(slip.id, slip, roll.id, roll), f)
               for pr in find_possible_rolls(roll, slip):
-                out(output2.format(slip.id, pr, pr.id), f)
+                out(output2.format(slip.id, pr, pr.id, pr.submitted_by), f)
         except Exception as e:
           out(output.format(slip, '!', e, '!'), f)
 
   def handle(self, *args, **options):
     allcmd = False
-    if len(options) == 0:
+    if all(options[x] is None for x in ['mislink_rolls', 'ghost_rolls', 'mislink_slips']):
       allcmd = True
     if allcmd or options['mislink_rolls']:
       print('* Pulling Rolls with mislinked Trainee...')
       self._mislink_rolls()
-    elif allcmd or options['ghost_rolls']:
+    if allcmd or options['ghost_rolls']:
       print('* Pulling "present" Rolls with no leavslips attached...')
       self._ghost_rolls()
-    elif allcmd or options['mislink_leaveslips']:
+    if allcmd or options['mislink_slips']:
       print('* Pulling leaveslips with rolls that do not belong to submitting trainee')
       self._mislink_leaveslips()
