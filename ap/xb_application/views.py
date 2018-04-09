@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.views.generic.edit import UpdateView
-from django.views.generic import ListView
+from django.views.generic import *
 
 from .models import *
 from .forms import XBApplicationForm
@@ -14,7 +14,7 @@ class XBApplicationView(UpdateView):
   form_class = XBApplicationForm
   template_name = 'xb_application/application_form.html'
 
-  def get_object(self):    
+  def get_object(self):
     admin, created = XBAdmin.objects.get_or_create(term=Term.current_term())
     xbApp, created = XBApplication.objects.get_or_create(trainee=self.request.user, xb_admin=admin)
     return xbApp
@@ -67,3 +67,14 @@ class XBReportView(ListView):
     ctx['page_title'] = 'FTTA-XB Application Report List'
     return ctx
 
+
+class XBApplicationDetails(DetailView):
+  model = XBApplication
+  template_name = 'xb_application/xb_detail.html'
+
+  def get_context_data(self, **kwargs):
+    ctx = super(XBApplicationDetails, self).get_context_data(**kwargs)
+    obj = self.get_object()
+    ctx['object'] = self.model.objects.filter(pk=obj.id).values()[0]
+    ctx['trainee'] = obj.trainee
+    return ctx

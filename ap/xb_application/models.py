@@ -71,7 +71,7 @@ class XBApplication(models.Model):
   # applicant
   trainee = models.ForeignKey(Trainee, null=True, blank=True)
 
-  applicant_name = models.CharField(max_length=100, null=True, blank=True)
+  applicant_name = models.CharField(max_length=100, null=True, blank=True, verbose_name = "Full Name")
 
   gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
 

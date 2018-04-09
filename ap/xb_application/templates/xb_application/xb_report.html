@@ -10,6 +10,7 @@
 <script type="text/javascript">
   $(document).ready(function() {
     $("#graduation").DataTable({
+      select: true,
       info: false,
       paging: false,
       dom: '<"row"<"col-sm-6"Bl><"col-sm-6"f>>' +
@@ -76,10 +77,10 @@
         <td>{{obj.trainee.firstname}}</td>
         <td>{{obj.trainee.lastname}}</td>
         <td>{{obj.trainee.get_gender_display}}</td>
-        <td>{{obj.citizenship}}</td>
+        <td>{{obj.get_citizenship_display}}</td>
         <td>{{obj.last_updated}}</td>
         <td>{{obj.submitted}}</td>
-        <td>{{obj.submitted}}</td>
+        <td><a href="{% url 'xb:xb-application-view' pk=obj.pk %}">Details</a></td>
       </tr>
       {% endfor %}
     </tbody>
