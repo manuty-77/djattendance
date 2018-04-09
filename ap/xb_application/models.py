@@ -71,7 +71,7 @@ class XBApplication(models.Model):
   # applicant
   trainee = models.ForeignKey(Trainee, null=True, blank=True)
 
-  applicant_name = models.CharField(max_length=100, null=True, blank=True, verbose_name = "Full Name")
+  name = models.CharField(max_length=100, null=True, blank=True, verbose_name = "Full Name")
 
   gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
 
@@ -190,5 +190,5 @@ class XBApplication(models.Model):
     return self.xb_admin.xb_show_status
 
   @property
-  def name(self):
+  def name_of_model(self):
     return self.__class__.__name__
