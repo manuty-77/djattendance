@@ -36,11 +36,16 @@ class Command(BaseCommand):
     right_now = datetime.now().strftime("%m%d%Y_%H%M%S")
     rolls = Roll.objects.all().order_by('event__id', 'date')
     ct = Term.current_term()
-    output = '{0}: {1}-- Submitted by: {2} \n'
+    output = '{0}: {1}-- Submitted by: {2}\n'
     output2 = 'For Roll {0}: Possible Event: {1} [ID: {2}]\n'
+    # stats
     bad_rolls = 0
     errors = 0
     no_sched = 0
+    wrong_elective = 0
+    crc = 0
+    yp_lb = 0
+    yp_irv = 0
 
     def find_possible_events(roll):
       # pulls possible events that the roll should be attached to by looking at the atached event's start and end time or name or event type
@@ -76,16 +81,29 @@ class Command(BaseCommand):
                 good = True
           if not good:
             bad_rolls += 1
-            out('Trainee DNM: ', f)
+            out('Trainee DNM: ', f)  # Trainee Did Not Match
             out(output.format(str(r.id), r, r.submitted_by), f)
+
+            if r.event.name in ["Greek I", "Greek II", "Character", "German I", "German II", "Greek/ Character", "Character Study"]:
+              wrong_elective += 1
+            elif r.trainee.team.code == "CRC":
+              crc += 1
+            elif r.trainee.team.code == "YP-LB":
+              yp_lb += 1
+            elif r.trainee.team.code == "YP-IRV":
+              yp_irv += 1
             for ev in find_possible_events(r).distinct():
               out(output2.format(r.id, ev, ev.id), f)
         except Exception as e:
           errors += 1
           out(output.format(str(r.id), e, r.submitted_by), f)
-      out('bad rolls: ' + str(bad_rolls), f)
-      out('Due to no schedules for the roll: ' + str(no_sched), f)
-      out('errors: ' + str(errors), f)
+      out('bad rolls: ' + str(bad_rolls) + '\n', f)
+      out('Due to no schedules for the roll: ' + str(no_sched) + '\n', f)
+      out('Elective related (Gk, Char, Ger): ' + str(wrong_elective) + '\n', f)
+      out('Cerritos College Related: ' + str(crc) + '\n', f)
+      out('YP-LB Related: ' + str(yp_lb) + '\n', f)
+      out('YP-IRV Related: ' + str(yp_irv) + '\n', f)
+      out('errors: ' + str(errors) + '\n', f)
 
   def _ghost_rolls(self):
     # Pull all rolls that have a present status with no leave slips attached
