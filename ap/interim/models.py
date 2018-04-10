@@ -36,6 +36,19 @@ class InterimIntentions(models.Model):
       ('U', 'Unsure if I will return next term'),
   )
 
+  POST_INTENT_CHOICES = (
+      ('USC', 'Serve Full-Time: College campus in the U.S.'),
+      ('OCC', 'Serve Full-Time: College campus in other countries'),
+      ('LSM', 'Serve Full-Time: Living Stream Ministry'),
+      ('BFA', 'Serve Full-Time: Bibles for America'),
+      ('OTH', 'Serve Full-Time: Other (explain'),
+      ('XB', 'Attend the FTTA Extension in Boston'),
+      ('JOB', 'Take a Job'),
+      ('SCH', 'Return to school'),
+      ('UND', 'Other/Undecided (explain)')
+      ('NON', 'None'),
+  )
+
   trainee = models.ForeignKey(Trainee, null=True, on_delete=models.SET_NULL)
 
   admin = models.ForeignKey(InterimIntentionsAdmin, null=True, blank=True, on_delete=models.SET_NULL)
@@ -57,6 +70,10 @@ class InterimIntentions(models.Model):
   home_zip = models.CharField(max_length=50, blank=True)
 
   intent = models.CharField(max_length=1, choices=INTENT_CHOICES, default="R")
+
+  post_training_intentions = models.CharField(max_length=3, choices=POST_INTENT_CHOICES, default='NON')
+
+  post_intent_comments = models.CharField(max_length=250, blank=True)
 
   submitted = models.BooleanField(default=False)
 

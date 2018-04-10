@@ -31,10 +31,12 @@ class InterimIntentionsForm(forms.ModelForm):
     self.fields['home_state'].label = 'State'
     self.fields['home_zip'].label = 'Zip'
     self.fields['intent'].label = 'Intent to Return'
+    self.fields['post_training_intentions'].label = 'Post Training Intentions'
+    self.fields['post_intent_comments'].label = 'Explain'
 
   class Meta:
     model = InterimIntentions
-    fields = ["cell_phone", "email", "home_phone", "home_locality", "home_address", "home_city", "home_state", "home_zip", "intent"]
+    fields = ["cell_phone", "email", "home_phone", "home_locality", "home_address", "home_city", "home_state", "home_zip", "intent", "post_training_intentions", "post_intent_comments"]
     widgets = {
       "intent": forms.RadioSelect,
     }
