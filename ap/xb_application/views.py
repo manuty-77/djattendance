@@ -5,7 +5,6 @@ from django.views.generic import *
 
 from .models import *
 from .forms import XBApplicationForm
-from aputils.trainee_utils import is_trainee, trainee_from_user
 from terms.models import Term
 
 
@@ -28,11 +27,9 @@ class XBApplicationView(UpdateView):
     xbApp.xb_admin = XBAdmin.objects.get_or_create(term=Term.current_term())[0]
     xbApp.trainee = self.request.user
 
-
     if 'submit' in self.request.POST:
-      xbAp.submitted = True
+      xbApp.submitted = True
       xbApp.date_submitted = datetime.now()
-    
     xbApp.last_updated = datetime.now()
     xbApp.save()
 
@@ -54,6 +51,7 @@ class XBApplicationView(UpdateView):
       ctx['save_button'] = '<button type="submit" class="btn btn-primary btn-save">Save</button>'
       ctx['submit_button'] = '<button type="submit" class="btn btn-primary btn-save" name="submit">Submit</button>'
     return ctx
+
 
 class XBReportView(ListView):
   model = XBApplication

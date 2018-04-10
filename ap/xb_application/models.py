@@ -71,7 +71,7 @@ class XBApplication(models.Model):
   # applicant
   trainee = models.ForeignKey(Trainee, null=True, blank=True)
 
-  name = models.CharField(max_length=100, null=True, blank=True, verbose_name = "Full Name")
+  name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Full Name")
 
   gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
 
@@ -172,7 +172,6 @@ class XBApplication(models.Model):
       return "[%s] - [Submitted: %s]" % (self.trainee, self.submitted)
     else:
       return "[None] - [Submitted: %s]" % (self.submitted)
-
 
   def get_absolute_url(self):
     return reverse('xb:xb-application')
