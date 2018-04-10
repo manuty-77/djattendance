@@ -185,6 +185,22 @@ $(document).ready(() => {
         {% endfor %}
       </div>
     </div>
+    <div class="row">
+      <div class="col-md-2">
+        {{form.post_training_intentions.label}}:
+      </div>
+      <div class="col-md-2">
+        {{form.post_training_intentions}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+        {{form.post_intent_comments.label}}:
+      </div>
+      <div class="col-md-2">
+        {{form.post_intent_comments}}
+      </div>
+    </div>
   </div>
     <button type="submit" class="btn btn-primary btn-save" id="submit">{{button_label|safe}}</button>
   </form>

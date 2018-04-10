@@ -16,6 +16,7 @@ class InterimItineraryForm(forms.ModelForm):
     widgets = {
       "start": DatePicker(),
       "end": DatePicker(),
+      "comments": forms.Textarea(attrs={'rows': 2})
     }
 
 
@@ -39,6 +40,7 @@ class InterimIntentionsForm(forms.ModelForm):
     fields = ["cell_phone", "email", "home_phone", "home_locality", "home_address", "home_city", "home_state", "home_zip", "intent", "post_training_intentions", "post_intent_comments"]
     widgets = {
       "intent": forms.RadioSelect,
+      "post_intent_comments": forms.Textarea(attrs={'rows': 4})
     }
 
 

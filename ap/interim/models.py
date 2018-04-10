@@ -45,7 +45,7 @@ class InterimIntentions(models.Model):
       ('XB', 'Attend the FTTA Extension in Boston'),
       ('JOB', 'Take a Job'),
       ('SCH', 'Return to school'),
-      ('UND', 'Other/Undecided (explain)')
+      ('UND', 'Other/Undecided (explain)'),
       ('NON', 'None'),
   )
 
