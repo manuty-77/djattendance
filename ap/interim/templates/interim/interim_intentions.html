@@ -31,6 +31,8 @@
 $(document).ready(() => {
 
   const size = 10;
+  
+  show_hide_comments();
 
   $('.datepicker').datepicker();
 
@@ -55,6 +57,18 @@ $(document).ready(() => {
   $("#id_interim_intentions_form").submit(function(e) {
     flashAjaxStatus()
   });
+
+  $('input[type=radio][name=intent]').change(show_hide_comments);
+
+  function show_hide_comments(){
+    if($('#id_intent_1').is(':checked')) {
+      $("#id_post_intent_comments").show()
+      $('label[for=id_post_intent_comments]').show();
+    } else {
+      $("#id_post_intent_comments").hide()
+      $('label[for=id_post_intent_comments]').hide();
+    }
+  }
 
 });
 
@@ -195,7 +209,7 @@ $(document).ready(() => {
     </div>
     <div class="row">
       <div class="col-md-2">
-        {{form.post_intent_comments.label}}:
+        {{form.post_intent_comments.label_tag}}
       </div>
       <div class="col-md-2">
         {{form.post_intent_comments}}
