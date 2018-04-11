@@ -110,20 +110,23 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     s.save()
 
     ta = None
-    if selected_ta > 0:
+    if int(selected_ta) > 0:
       ta = TrainingAssistant.objects.filter(pk=selected_ta).first()
       individual = individual.filter(TA=ta)
       group = group.filter(TA=ta)
 
-    if status != "-1":
-      individual = individual.filter(status=status)
-      group = group.filter(status=status)
-
     tr = None  # selected_trainee
-    if selected_trainee > 0:
+    if int(selected_trainee) > 0:
       tr = Trainee.objects.filter(pk=selected_trainee).first()
       individual = individual.filter(trainee=tr)
       group = group.filter(trainees__in=[tr])
+
+    if status != "-1":
+      if status == 'P':
+        si_slips = individual.filter(status='S')
+        sg_slips = group.filter(status='S')
+      individual = individual.filter(status=status) | si_slips
+      group = group.filter(status=status) | sg_slips
 
     # Prefetch for performance
     individual.select_related('trainee', 'TA', 'TA_informed').prefetch_related('rolls')
@@ -132,7 +135,7 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     ctx['TA_list'] = TrainingAssistant.objects.filter(groups__name='training_assistant')
     ctx['leaveslips'] = chain(individual, group)  # combines two querysets
     ctx['selected_ta'] = ta
-    ctx['status_list'] = LeaveSlip.LS_STATUS
+    ctx['status_list'] = LeaveSlip.LS_STATUS[:-1]  # Removes Sister Approved Choice
     ctx['selected_status'] = status
     ctx['selected_trainee'] = tr
     ctx['trainee_list'] = Trainee.objects.all()
