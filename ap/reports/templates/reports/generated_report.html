@@ -68,10 +68,10 @@
 				{% for trainee in data %}
       	<tr>
         <td> {{ trainee }} </td>  
-        {% for each in data|get_item_for_dict:trainee %}
-        {% with trainee_data=data|get_item_for_dict:trainee %}
+        {% for each in data|get_item_for_data:trainee %}
+        {% with trainee_data=data|get_item_for_data:trainee %}
 				<td>
-				{{ trainee_data|get_item_for_dict:each }}
+				{{ trainee_data|get_item_for_data:each }}
 				</td>
 				{% endwith %}
         {% endfor %}

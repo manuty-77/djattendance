@@ -81,6 +81,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
   def post(self, request, *args, **kwargs):
     data = dict(request.POST.iterlists())
+    print str(data)
     rtn_data = dict() #{TRAINEE_NAME: {Absences - Total: 10, Tardies - Total: 5, ...}, TRAINEE_NAME: ...}
     date_data = dict()
     date_from = datetime.strptime(data['date_from'][0], '%m/%d/%Y')
@@ -95,7 +96,8 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
     trainees = Trainee.objects.all()
 
-    gender = data['gender']
+    if 'gender' in data.keys():
+      gender = data['gender']
 
     if "Male" not in gender:
       trainees = trainees.filter(gender="S")
@@ -106,89 +108,93 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
       return rtn_data
 
     #Return trainees only for the terms requested by report
-    terms_filter = [int(s) for s in data['term'] if s.isdigit()]
+    if 'term' in data.keys():
+      terms_filter = [int(s) for s in data['term'] if s.isdigit()]
 
-    filtered_trainees = Trainee.objects.none()
-    for term in terms_filter:
-      filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
-    filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list).exclude(status='P')
-    
-    items_for_query = data['general_report']
-
-    for trainee in filtered_trainees:
-      rtn_data[trainee.full_name] = {}
-      for item in items_for_query:
-        rtn_data[trainee.full_name][item] = 0
-    
-    for roll in filtered_rolls:
-
-      #if roll.status == 'P':
-      #  if not 'Present' in rtn_data[roll.trainee.full_name]:
-      #    rtn_data[roll.trainee.full_name]['Present'] = 1
-      #  else:
-      #    rtn_data[roll.trainee.full_name]['Present'] += 1
+    if 'general_report' in data.keys():
+      filtered_trainees = Trainee.objects.none()
+      for term in terms_filter:
+        filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
+      filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list).exclude(status='P')
       
-      #logic for each 'elif' is check if item for report is present in dictionary...
-      #if not, create the item for report for the trainee
-      #but check to make sure it's an item to report
-      if roll.status == 'A':
-        if 'Absences - Total' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Absences - Total'] += 1
-        status_of_roll = self.excused_status(roll.trainee, roll)
-        if status_of_roll in items_for_query:
-          rtn_data[roll.trainee.full_name][status_of_roll] += 1
-        if 'Absences - Excused' in items_for_query and 'Absences - Excused' in status_of_roll:
-          rtn_data[roll.trainee.full_name]['Absences - Excused'] += 1
-        if 'Absences - Unexcused and Sickness' in items_for_query and ('Absences - Unexcused' in status_of_roll or 'Absences - Excused - Sickness' in status_of_roll):
-          rtn_data[roll.trainee.full_name]['Absences - Unexcused and Sickness'] += 1
-        if 'Classes Missed' in items_for_query and roll.event.type == 'C':
-          rtn_data[roll.trainee.full_name]['Classes Missed'] += 1
-      #for tardy rolls add to total tardy count as well as type of tardy count
-      elif roll.status == 'T':
-        if 'Tardies - Total' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Tardies - Total'] += 1
-        if 'Tardies - Late' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Tardies - Late'] += 1
-        status_of_roll = self.excused_status(roll.trainee, roll)
-        if status_of_roll in items_for_query:
-          rtn_data[roll.trainee.full_name][status_of_roll] += 1
-      elif roll.status == 'U':
-        if 'Tardies - Total' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Tardies - Total'] += 1
-        if 'Tardies - Uniform' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Tardies - Uniform'] += 1
-        status_of_roll = self.excused_status(roll.trainee, roll)
-        if status_of_roll in items_for_query:
-          rtn_data[roll.trainee.full_name][status_of_roll] += 1
-      elif roll.status == 'L':
-        if 'Tardies - Total' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Tardies - Total'] += 1
-        if 'Tardies - Left Class' in items_for_query:
-          rtn_data[roll.trainee.full_name]['Tardies - Left Class'] += 1
-        status_of_roll = self.excused_status(roll.trainee, roll)
-        if status_of_roll in items_for_query:
-          rtn_data[roll.trainee.full_name][status_of_roll] += 1
+      items_for_query = data['general_report']
 
+      for trainee in filtered_trainees:
+        rtn_data[trainee.full_name] = {}
+        for item in items_for_query:
+          rtn_data[trainee.full_name][item] = 0
+      
+      """
+      for roll in filtered_rolls:
+
+        #if roll.status == 'P':
+        #  if not 'Present' in rtn_data[roll.trainee.full_name]:
+        #    rtn_data[roll.trainee.full_name]['Present'] = 1
+        #  else:
+        #    rtn_data[roll.trainee.full_name]['Present'] += 1
+        
+        #logic for each 'elif' is check if item for report is present in dictionary...
+        #if not, create the item for report for the trainee
+        #but check to make sure it's an item to report
+        if roll.status == 'A':
+          if 'Absences - Total' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Absences - Total'] += 1
+          status_of_roll = self.excused_status(roll.trainee, roll)
+          if status_of_roll in items_for_query:
+            rtn_data[roll.trainee.full_name][status_of_roll] += 1
+          if 'Absences - Excused' in items_for_query and 'Absences - Excused' in status_of_roll:
+            rtn_data[roll.trainee.full_name]['Absences - Excused'] += 1
+          if 'Absences - Unexcused and Sickness' in items_for_query and ('Absences - Unexcused' in status_of_roll or 'Absences - Excused - Sickness' in status_of_roll):
+            rtn_data[roll.trainee.full_name]['Absences - Unexcused and Sickness'] += 1
+          if 'Classes Missed' in items_for_query and roll.event.type == 'C':
+            rtn_data[roll.trainee.full_name]['Classes Missed'] += 1
+        #for tardy rolls add to total tardy count as well as type of tardy count
+        elif roll.status == 'T':
+          if 'Tardies - Total' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Tardies - Total'] += 1
+          if 'Tardies - Late' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Tardies - Late'] += 1
+          status_of_roll = self.excused_status(roll.trainee, roll)
+          if status_of_roll in items_for_query:
+            rtn_data[roll.trainee.full_name][status_of_roll] += 1
+        elif roll.status == 'U':
+          if 'Tardies - Total' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Tardies - Total'] += 1
+          if 'Tardies - Uniform' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Tardies - Uniform'] += 1
+          status_of_roll = self.excused_status(roll.trainee, roll)
+          if status_of_roll in items_for_query:
+            rtn_data[roll.trainee.full_name][status_of_roll] += 1
+        elif roll.status == 'L':
+          if 'Tardies - Total' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Tardies - Total'] += 1
+          if 'Tardies - Left Class' in items_for_query:
+            rtn_data[roll.trainee.full_name]['Tardies - Left Class'] += 1
+          status_of_roll = self.excused_status(roll.trainee, roll)
+          if status_of_roll in items_for_query:
+            rtn_data[roll.trainee.full_name][status_of_roll] += 1
+      """
 
     if "Number of LS" in items_for_query:
       for trainee in filtered_trainees:
         rtn_data[trainee.full_name]['Number of LS'] = len(Discipline.objects.filter(trainee=trainee))
 
-    for trainee in filtered_trainees:
-      for general_item in data['general_item']:
-        if general_item == "Gender":
-          rtn_data[trainee.full_name]["Gender"] = trainee.gender
-        elif general_item == "Term":
-          rtn_data[trainee.full_name]["Term"] = trainee.current_term
-        elif general_item == "Sending Locality":
-          if trainee.locality != None:
-            rtn_data[trainee.full_name]["Sending Locality"] = trainee.locality.city.name
-          else:
-            rtn_data[trainee.full_name]["Sending Locality"] = 'N/A'
-        elif general_item == "Team":
-          rtn_data[trainee.full_name]["team"] = trainee.team.name
-        elif general_item == "TA":
-          rtn_data[trainee.full_name]["ta"] = trainee.TA.full_name
+    if 'general_item' in data.keys():
+      for trainee in filtered_trainees:
+        for general_item in data['general_item']:
+          if general_item == "Gender":
+            rtn_data[trainee.full_name]["Gender"] = trainee.gender
+          elif general_item == "Term":
+            rtn_data[trainee.full_name]["Term"] = trainee.current_term
+          elif general_item == "Sending Locality":
+            if trainee.locality != None:
+              rtn_data[trainee.full_name]["Sending Locality"] = trainee.locality.city.name
+            else:
+              rtn_data[trainee.full_name]["Sending Locality"] = 'N/A'
+          elif general_item == "Team":
+            rtn_data[trainee.full_name]["team"] = trainee.team.name
+          elif general_item == "TA":
+            rtn_data[trainee.full_name]["ta"] = trainee.TA.full_name
 
     context = {
       'data': rtn_data,
