@@ -9,6 +9,7 @@ from accounts.models import Trainee
 from lifestudies.models import Discipline
 from leaveslips.models import IndividualSlip, GroupSlip
 from attendance.models import Roll
+import pickle
 
 class ReportCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
   template_name = 'reports/reports.html'
@@ -116,6 +117,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
       for term in terms_filter:
         filtered_trainees = filtered_trainees | trainees.filter(current_term=int(term))
       filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__in=date_list).exclude(status='P')
+      pickled_rolls = pickle.dumps(filtered_rolls)
       
       items_for_query = data['general_report']
 
@@ -123,7 +125,32 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         rtn_data[trainee.full_name] = {}
         for item in items_for_query:
           rtn_data[trainee.full_name][item] = 0
-      
+        pickled_query = pickle.loads(pickled_rolls)
+        qs = Roll.objects.all()
+        qs.query = pickled_query
+        
+        if 'Tardies - Total' in items_for_query:
+          late_tardies = len(qs.query.filter(trainee=trainee, status='T'))
+          uniform_tardies = len(qs.query.filter(trainee=trainee, status='U'))
+          left_class_tardies = len(qs.query.filter(trainee=trainee, status='L'))
+          rtn_data[trainee.full_name]['Tardies - Total'] = late_tardies + uniform_tardies + left_class_tardies
+        if 'Tardies - Uniform' in items_for_query:
+          if 'uniform_tardies' in locals():
+            rtn_data[trainee.full_name]['Tardies - Uniform'] = uniform_tardies
+          else:
+            rtn_data[trainee.full_name]['Tardies - Uniform'] = len(qs.query.filter(trainee=trainee, status='U'))
+        if 'Tardies - Left Class' in items_for_query:
+          if 'left_class_tardies' in locals():
+            rtn_data[trainee.full_name]['Tardies - Left Class'] = left_class_tardies
+          else:
+            rtn_data[trainee.full_name]['Tardies - Left Class'] = len(qs.query.filter(trainee=trainee, status='L'))
+        if 'Tardies - Late' in items_for_query:
+          if 'late_tardies' in locals():
+            rtn_data[trainee.full_name]['Tardies - Late'] = late_tardies
+          else:
+            rtn_data[trainee.full_name]['Tardies - Late'] = len(qs.query.filter(trainee=trainee, status='T'))
+
+
       """
       for roll in filtered_rolls:
 
