@@ -8,7 +8,7 @@ from terms.models import Term
 from braces.views import GroupRequiredMixin
 
 from dateutil import parser
-
+from datetime import datetime, timedelta
 
 class InterimIntentionsView(UpdateView):
   model = InterimIntentions
@@ -51,6 +51,7 @@ class InterimIntentionsView(UpdateView):
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Interim Intentions'
     ctx['itinerary_forms'] = interim_itineraries_forms
+    ctx['interim_start'] = Term.current_term().end + timedelta(days=1)
     ctx['admin'] = admin
 
     return ctx

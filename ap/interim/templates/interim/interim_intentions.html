@@ -30,35 +30,26 @@
 
 $(document).ready(() => {
 
-  const size = 10;
+  var interim_start = "{{interim_start|date:'m/d/Y'}}";
   
   show_hide_comments();
 
   $('.datepicker').datepicker();
 
-  $("#add_row").click(() => {
-    let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
+  $("#add_row").click(add_row);
 
-    if (val < size) {
-      $("#id_itinerary_table tr:last").clone().appendTo("#id_itinerary_table");
-      val++;
-      $("#id_itinerary_table tr:last").attr("id","row_" + val);
-      $('.datepicker').datepicker();
-    }
-  })
-
-  $("#delete_row").click(() => {
-    let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
-    if (val != 0){
-      $("#id_itinerary_table tr:last").remove();
-    }
-  })
+  $("#delete_row").click(delete_row);
 
   $("#id_interim_intentions_form").submit(function(e) {
     flashAjaxStatus()
   });
 
   $('input[type=radio][name=intent]').change(show_hide_comments);
+
+  if ($("#id_start").val() == 0){
+    $("#id_start").val(interim_start);
+  }
+  $("#id_start").prop( "disabled", true );
 
   function show_hide_comments(){
     if($('#id_intent_1').is(':checked')) {
@@ -67,6 +58,25 @@ $(document).ready(() => {
     } else {
       $("#id_post_intent_comments").hide()
       $('label[for=id_post_intent_comments]').hide();
+    }
+  }
+
+  function add_row(){
+    const size = 20;
+    let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
+
+    if (val < size) {
+      $("#id_itinerary_table tr:last").clone().appendTo("#id_itinerary_table");
+      val++;
+      $("#id_itinerary_table tr:last").attr("id","row_" + val);
+      $('.datepicker').datepicker();
+    }
+  }
+
+  function delete_row(){
+    let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
+    if (val != 0){
+      $("#id_itinerary_table tr:last").remove();
     }
   }
 
