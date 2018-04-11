@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from attendance.models import Roll
-from accounts.models import Trainee
 from schedules.models import Event
 from terms.models import Term
 from datetime import datetime
@@ -15,17 +14,17 @@ def out(s, f):
 class Command(BaseCommand):
   # to use: python ap/manage.py data_check_rolls --settings=ap.settings.dev
   def add_arguments(self, parser):
-    parser.add_argument(
+    parser.add_argument(  # --mr 1
         '--mr',
         dest='mislink_rolls',
         help='Pull rolls with a mislink in schedules',
     )
-    parser.add_argument(
+    parser.add_argument(  # --gr 1
         '--gr',
         dest='ghost_rolls',
         help='Pull present rolls with no leave slips attached',
     )
-    parser.add_argument(
+    parser.add_argument(  # --ml 1
         '--ml',
         dest='mislink_slips',
         help='Pull all slips with mislink in rolls',
@@ -39,7 +38,7 @@ class Command(BaseCommand):
     output = '{0}: {1}-- Submitted by: {2}\n'
     output2 = 'For Roll {0}: Possible Event: {1} [ID: {2}]\n'
     # stats
-    bad_rolls = 0
+    bad_rolls = []
     errors = 0
     no_sched = 0
     wrong_elective = 0
@@ -57,7 +56,6 @@ class Command(BaseCommand):
     with open('../mislink_rolls' + right_now + '.txt', 'w') as f:
       for r in rolls:
         try:
-          # looks through highest priority first
           schedules = r.event.schedules.all()
           roll_week = ct.term_week_of_date(r.date)
           good = False
@@ -80,10 +78,9 @@ class Command(BaseCommand):
               else:
                 good = True
           if not good:
-            bad_rolls += 1
+            bad_rolls.append(r)
             out('Trainee DNM: ', f)  # Trainee Did Not Match
             out(output.format(str(r.id), r, r.submitted_by), f)
-
             if r.event.name in ["Greek I", "Greek II", "Character", "German I", "German II", "Greek/ Character", "Character Study"]:
               wrong_elective += 1
             elif r.trainee.team.code == "CRC":
@@ -94,10 +91,11 @@ class Command(BaseCommand):
               yp_irv += 1
             for ev in find_possible_events(r).distinct():
               out(output2.format(r.id, ev, ev.id), f)
+            out('\n', f)
         except Exception as e:
           errors += 1
           out(output.format(str(r.id), e, r.submitted_by), f)
-      out('bad rolls: ' + str(bad_rolls) + '\n', f)
+      out('bad rolls: ' + str(len(bad_rolls)) + '\n', f)
       out('Due to no schedules for the roll: ' + str(no_sched) + '\n', f)
       out('Elective related (Gk, Char, Ger): ' + str(wrong_elective) + '\n', f)
       out('Cerritos College Related: ' + str(crc) + '\n', f)
