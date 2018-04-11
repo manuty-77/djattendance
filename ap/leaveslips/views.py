@@ -141,6 +141,24 @@ def modify_status(request, classname, status, id):
   return list_link
 
 
+@group_required(('training_assistant',), raise_exception=True)
+def bulk_modify_status(request, status):
+  print status
+  slips = request.POST.get('slips')
+  individual = []
+  group = []
+  for key, value in request.POST.iteritems():
+    if value == "individual":
+      individual.append(key)
+    else:
+      group.append(key)
+  if individual:
+    IndividualSlip.objects.filter(pk__in=individual).update(status=status)
+  if group:
+    GroupSlip.objects.filter(pk__in=group).update(status=status)
+  return redirect(reverse_lazy('leaveslips:ta-leaveslip-list'))
+
+
 # API Views
 class IndividualSlipViewSet(BulkModelViewSet):
   queryset = IndividualSlip.objects.all()
