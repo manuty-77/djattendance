@@ -14,6 +14,7 @@
       ],
       iDisplayLength: 50,
     });
+    $('#leaveslip_trainee_list').select2();
 
     $('#display_leaveslips tbody').on('click', 'tr', function () {
       if($(this).prop("type") == "button"){
@@ -29,6 +30,9 @@
       }
     });
     $("#leaveslip_ta_list").on('change', function(){
+      $(this).closest("form").submit();
+    });
+    $("#leaveslip_trainee_list").on('change', function(){
       $(this).closest("form").submit();
     });
     $("#leaveslip_status").on('change', function(){
@@ -69,6 +73,13 @@
         <option {% if selected_status == -1 %}selected="selected"{% endif %} value="-1">All</option>
         {% for choice in status_list %}
           <option {% if selected_status == choice.0 %}selected="selected"{% endif %} value="{{choice.0}}">{{choice.1}}</option>
+        {% endfor %}
+      </select>
+      Filter by trainee {{selected_trainee}}:
+      <select id="leaveslip_trainee_list" name="leaveslip_trainee_list">
+        <option {% if selected_trainee == None %}selected="selected"{% endif %} value="-1">All</option>
+        {% for choice in trainee_list %}
+          <option {% if selected_trainee == choice.id %}selected="selected"{% endif %} value="{{choice.id}}">{{choice.full_name}}</option>
         {% endfor %}
       </select>
     </form>

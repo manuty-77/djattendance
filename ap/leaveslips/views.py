@@ -14,7 +14,7 @@ from braces.views import GroupRequiredMixin
 from .models import IndividualSlip, GroupSlip, LeaveSlip
 from .forms import IndividualSlipForm, GroupSlipForm
 from .serializers import IndividualSlipSerializer, IndividualSlipFilter, GroupSlipSerializer, GroupSlipFilter
-from accounts.models import TrainingAssistant, Statistics
+from accounts.models import TrainingAssistant, Statistics, Trainee
 from attendance.views import react_attendance_context
 from aputils.utils import modify_model_status
 from aputils.trainee_utils import trainee_from_user
@@ -92,16 +92,21 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     slip_setting = s.settings.get('leaveslip')
     selected_ta = slip_setting.get('selected_ta', self.request.user.id)
     status = slip_setting.get('selected_status', 'P')
+    status = slip_setting.get('selected_status', 'P')
+    selected_trainee = slip_setting.get('selected_trainee', Trainee.objects.first().id)
 
     if self.request.method == 'POST':
       selected_ta = int(self.request.POST.get('leaveslip_ta_list'))
       status = self.request.POST.get('leaveslip_status')
+      selected_trainee = self.request.POST.get('leaveslip_trainee_list')
     else:
       status = self.request.GET.get('status', status)
       selected_ta = self.request.GET.get('ta', selected_ta)
+      selected_trainee = self.request.GET.get('trainee')
 
     s.settings['leaveslip']['selected_ta'] = selected_ta
     s.settings['leaveslip']['selected_status'] = status
+    s.settings['leaveslip']['selected_trainee'] = selected_trainee
     s.save()
 
     ta = None
@@ -114,6 +119,12 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
       individual = individual.filter(status=status)
       group = group.filter(status=status)
 
+    tr = None  # selected_trainee
+    if selected_trainee > 0:
+      tr = Trainee.objects.filter(pk=selected_trainee).first()
+      individual = individual.filter(trainee=tr)
+      group = group.filter(trainees__in=[tr])
+
     # Prefetch for performance
     individual.select_related('trainee', 'TA', 'TA_informed').prefetch_related('rolls')
     group.select_related('trainee', 'TA', 'TA_informed').prefetch_related('trainees')
@@ -123,6 +134,8 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     ctx['selected_ta'] = ta
     ctx['status_list'] = LeaveSlip.LS_STATUS
     ctx['selected_status'] = status
+    ctx['selected_trainee'] = tr
+    ctx['trainee_list'] = Trainee.objects.all()
     return ctx
 
 

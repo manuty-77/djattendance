@@ -62,12 +62,13 @@ def generate_cards(context):
 
     ls_p = IndividualSlip.objects.filter(status='P', TA=user).count() + GroupSlip.objects.filter(status='P', TA=user).count()
     ls_f = IndividualSlip.objects.filter(status='F', TA=user).count() + GroupSlip.objects.filter(status='F', TA=user).count()
+    first_trainee = Trainee.objects.filter(TA=user).first()
 
     TA_leaveslips = Card(
         header_title="Leave Slips",
         card_links=[
-            CardLink(title="Pending", url="%s?status=P&ta=%s" % (reverse('leaveslips:ta-leaveslip-list'), user.id), number=ls_p),
-            CardLink(title="Marked for fellowship", url="%s?status=F&ta=%s" % (reverse('leaveslips:ta-leaveslip-list'), user.id), number=ls_f),
+            CardLink(title="Pending", url="%s?status=P&ta=%s&trainee=%s" % (reverse('leaveslips:ta-leaveslip-list'), user.id, first_trainee.id), number=ls_p),
+            CardLink(title="Marked for fellowship", url="%s?status=F&ta=%strainee=%s" % (reverse('leaveslips:ta-leaveslip-list'), user.id, first_trainee.id), number=ls_f),
         ]
     )
 
