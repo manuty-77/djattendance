@@ -75,7 +75,7 @@
           <option {% if selected_status == choice.0 %}selected="selected"{% endif %} value="{{choice.0}}">{{choice.1}}</option>
         {% endfor %}
       </select>
-      Filter by trainee {{selected_trainee}}:
+      Filter by trainee:
       <select id="leaveslip_trainee_list" name="leaveslip_trainee_list">
         <option {% if selected_trainee == None %}selected="selected"{% endif %} value="-1">All</option>
         {% for choice in trainee_list %}
