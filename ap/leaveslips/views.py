@@ -145,8 +145,6 @@ def modify_status(request, classname, status, id):
 
 @group_required(('training_assistant',), raise_exception=True)
 def bulk_modify_status(request, status):
-  print status
-  slips = request.POST.get('slips')
   individual = []
   group = []
   for key, value in request.POST.iteritems():
