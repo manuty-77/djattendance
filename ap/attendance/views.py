@@ -44,8 +44,8 @@ def react_attendance_context(trainee):
   events = trainee.events
   groupevents = trainee.groupevents
   rolls = Roll.objects.filter(trainee=trainee)
-  individualslips = IndividualSlip.objects.filter(trainee=trainee)
-  groupslips = GroupSlip.objects.filter(Q(trainees__in=[trainee])).distinct()
+  individualslips = IndividualSlip.objects.filter(trainee=trainee).prefetch_related('rolls')
+  groupslips = GroupSlip.objects.filter(Q(trainees__in=[trainee])).distinct().prefetch_related('trainees')
   TAs = TrainingAssistant.objects.filter(groups__name='training_assistant')
   term = [Term.current_term()]
   ctx = {
@@ -246,9 +246,12 @@ class AuditRollsView(GroupRequiredMixin, TemplateView):
         details = []
         rolls = rolls_all.filter(trainee=t)
         roll_trainee = rolls.filter(submitted_by=t)  # rolls taken by trainee
-        roll_am = rolls.filter(submitted_by=trainees_secondyear.filter(groups__name="attendance_monitors"))  # rolls taken by attendance monitor
+        roll_am = rolls.filter(submitted_by__in=trainees_secondyear.filter(groups__name="attendance_monitors"))  # rolls taken by attendance monitor
         for r in roll_am.order_by('date'):
-          r_stat_trainee = roll_trainee.filter(event=r.event, date=r.date).values('status')[0]['status']  # status of correspond event from trainee
+          self_status = roll_trainee.filter(event=r.event, date=r.date).values('status')
+          r_stat_trainee = 'P'
+          if self_status:
+              r_stat_trainee = self_status[0]['status']
 
           # PM indicates that mismatch is only when trainee marks P and AM marks otherwise
           if r_stat_trainee == 'P' and r.status != 'P':
@@ -275,9 +278,6 @@ class TableRollsView(GroupRequiredMixin, AttendanceView):
   group_required = [u'attendance_monitors', u'training_assistant']
 
   def get(self, request, *args, **kwargs):
-    if not is_trainee(self.request.user):
-      return redirect('home')
-
     context = self.get_context_data()
     return super(TableRollsView, self).render_to_response(context)
 
@@ -425,10 +425,14 @@ class HouseRollsView(TableRollsView):
 
   def get_context_data(self, **kwargs):
     trainee = trainee_from_user(self.request.user)
-    if trainee.has_group(['attendance_monitors']):
-      kwargs['trainees'] = Trainee.objects.filter(house=trainee.house)
+    if trainee:
+      house = trainee.house
     else:
-      kwargs['trainees'] = Trainee.objects.filter(house=trainee.house).filter(Q(self_attendance=False, current_term__gt=2) | Q(current_term__lte=2))
+      house = House.objects.first()
+    if self.request.user.has_group(['attendance_monitors']):
+      kwargs['trainees'] = Trainee.objects.filter(house=house)
+    else:
+      kwargs['trainees'] = Trainee.objects.filter(house=house).filter(Q(self_attendance=False, current_term__gt=2) | Q(current_term__lte=2))
     kwargs['type'] = 'H'
     ctx = super(HouseRollsView, self).get_context_data(**kwargs)
     ctx['title'] = "House Rolls"
@@ -450,10 +454,14 @@ class TeamRollsView(TableRollsView):
 
   def get_context_data(self, **kwargs):
     trainee = trainee_from_user(self.request.user)
-    if trainee.has_group(['attendance_monitors']):
-      kwargs['trainees'] = Trainee.objects.filter(team=trainee.team)
+    if trainee:
+      team = trainee.team
     else:
-      kwargs['trainees'] = Trainee.objects.filter(team=trainee.team).filter(Q(self_attendance=False, current_term__gt=2) | Q(current_term__lte=2))
+      team = Team.objects.first()
+    if self.request.user.has_group(['attendance_monitors']):
+      kwargs['trainees'] = Trainee.objects.filter(team=team)
+    else:
+      kwargs['trainees'] = Trainee.objects.filter(team=team).filter(Q(self_attendance=False, current_term__gt=2) | Q(current_term__lte=2))
     kwargs['type'] = 'T'
     ctx = super(TeamRollsView, self).get_context_data(**kwargs)
     ctx['title'] = "Team Rolls"

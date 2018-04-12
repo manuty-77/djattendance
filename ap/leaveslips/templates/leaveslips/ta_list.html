@@ -47,17 +47,19 @@
         select($(this), bulkSelect);
       }
     });
-    $("#leaveslip_ta_list").on('change', function(){
-      $(this).closest("form").submit();
-    });
-    $("#leaveslip_status").on('change', function(){
-      $(this).closest("form").submit();
-    });
-  });
 
-  $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-  })
+    $("#leaveslip_ta_list").on('change', function() {
+      $(this).closest("form").submit();
+    });
+
+    $("#leaveslip_status").on('change', function() {
+      $(this).closest("form").submit();
+    });
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    ajaxify($('.save-first'));
+  });
 
   $(document).ready(function(){
     $("#checkall").click(function () {
@@ -150,6 +152,7 @@
     <table id="display_leaveslips" class="table table-condensed table-hover table-bordered table-striped">
       <thead>
         <tr>
+          <th>ID</th>
           <th>Name(s)</th>
           <th>Reason</th>
           <th>Date</th>
@@ -164,9 +167,11 @@
         {% for leaveslip in leaveslips %}
             {% if leaveslip.classname == "individual" %}
               <tr id="{{leaveslip.id}}-individual" class="leaveslip-row">
+                <td>{{leaveslip.id}}</td>
                 <td>{{leaveslip.trainee.full_name}}</td>
             {% else %}
               <tr id="{{leaveslip.id}}-group" class="leaveslip-row">
+                <td>{{leaveslip.id}}</td>
                 <td>
                   <i title="Group leave slip" class="fa fa-users fa-lg" aria-hidden="true"></i>&nbsp;
                   {{ leaveslip.trainees.all|join:", " }}
@@ -191,7 +196,7 @@
                 <span class="label label-warning">{{leaveslip.get_status_display}}</span>
               {% endif %}
               {% if leaveslip.texted %}
-                <span class="label label-primary">Texted attendance number</span>
+                <span class="label label-primary">Texted Attendance Number</span>
               {% endif %}
               {% if leaveslip.informed %}
                 <span class="label label-default">Informed TA</span>

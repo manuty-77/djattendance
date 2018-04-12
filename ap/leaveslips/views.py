@@ -29,6 +29,7 @@ class LeaveSlipUpdate(GroupRequiredMixin, generic.UpdateView):
     ctx.update(react_attendance_context(trainee))
     ctx['Today'] = self.get_object().get_date().strftime('%m/%d/%Y')
     ctx['SelectedEvents'] = listJSONRenderer.render(AttendanceEventWithDateSerializer(self.get_object().events, many=True).data)
+    ctx['default_transfer_ta'] = self.request.user.TA or self.get_object().TA
     return ctx
 
 
@@ -117,11 +118,12 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     individual.select_related('trainee', 'TA', 'TA_informed').prefetch_related('rolls')
     group.select_related('trainee', 'TA', 'TA_informed').prefetch_related('trainees')
 
-    ctx['TA_list'] = TrainingAssistant.objects.all()
+    ctx['TA_list'] = TrainingAssistant.objects.filter(groups__name='training_assistant')
     ctx['leaveslips'] = chain(individual, group)  # combines two querysets
     ctx['selected_ta'] = ta
     ctx['status_list'] = LeaveSlip.LS_STATUS
     ctx['selected_status'] = status
+
     return ctx
 
 
