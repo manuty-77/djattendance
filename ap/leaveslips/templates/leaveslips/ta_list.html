@@ -100,8 +100,7 @@
           }
           $(".bulk-actions").hide();
 
-          var msg = Object.keys(bulkSelect).length.toString() + " leave slips were " + TYPESTRINGS[type];
-          new Notification(Notification.SUCCESS, msg).show();
+          new Notification(Notification.SUCCESS, $(data).find('.announce__title').html()).show();
           bulkSelect = {};
         },
         error: function(xhr, textStatus, errorThrown) {

@@ -2,6 +2,7 @@ from itertools import chain
 import json
 
 from django.views import generic
+from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.shortcuts import redirect
@@ -156,6 +157,9 @@ def bulk_modify_status(request, status):
     IndividualSlip.objects.filter(pk__in=individual).update(status=status)
   if group:
     GroupSlip.objects.filter(pk__in=group).update(status=status)
+  sample = IndividualSlip.objects.get(pk=individual[0]) if individual else GroupSlip.objects.get(pk=group[0])
+  message = "%s leave slips were %s" % (len(individual) + len(group), sample.get_status_display())
+  messages.add_message(request, messages.SUCCESS, message)
   return redirect(reverse_lazy('leaveslips:ta-leaveslip-list'))
 
 

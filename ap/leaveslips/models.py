@@ -57,7 +57,7 @@ class LeaveSlip(models.Model, RequestMixin):
       ('P', 'Pending'),
       ('F', 'Marked for Fellowship'),
       ('D', 'Denied'),
-      ('S', 'TA sister approved'),
+      ('S', 'TA Sister Approved'),
   )
 
   type = models.CharField(max_length=5, choices=LS_TYPES)
