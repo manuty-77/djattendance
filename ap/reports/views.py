@@ -129,6 +129,61 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         qs = Roll.objects.all()
         qs.query = pickled_query
         
+        #ABSENCES FILTER
+        if 'Absences - Total' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Total'] = len(qs.query.filter(trainee=trainee,status='A'))
+        if 'Absences - Excused' in items_for_query:
+          indv_slips = IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'])
+          rtn_data[trainee.full_name]['Absences - Excused'] += len(indv_slips)
+          #TODO GroupSlips
+        if 'Absences - Unexcused' in items_for_query:
+          if 'Absences - Total' in rtn_data[trainee.full_name] and 'Absences - Excused' in rtn_data[trainee.full_name]:
+            rtn_data[trainee.full_name]['Absences - Unexcused'] = rtn_data[trainee.full_name]['Absences - Total'] - rtn_data[trainee.full_name]['Absences - Excused']
+          else:
+            rtn_data[trainee.full_name]['Absences - Unexcused'] = len(qs.query.filter(trainee=trainee,status='A')) - len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S']))
+          #TODO GroupSlips
+        if 'Absences - Unexcused and Sickness' in items_for_query:
+          #get individual slips for absences that are excused with type sick
+          rtn_data[trainee.full_name]['Absences - Unexcused and Sickness'] += len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="SICK"))
+          #get individual slips for unexcused absences
+          if 'Absences - Unexcused' in rtn_data[trainee.full_name]:
+            rtn_data[trainee.full_name]['Absences - Unexcused and Sickness'] += rtn_data[trainee.full_name]['Absences - Unexcused']
+          else:
+            rtn_data[trainee.full_name]['Absences - Unexcused and Sickness'] += len(qs.query.filter(trainee=trainee,status='A')) - IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'])    
+            #TODO: get groupslips
+
+        if 'Absences - Excused - Conference' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Conference'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="CONF"))
+        if 'Absences - Excused - Family Emergency' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Family Emergency'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="EMERG"))
+        if 'Absences - Excused - Fellowship' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Fellowship'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="FWSHP"))
+        if 'Absences - Excused - Funeral' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Funeral'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="FUNRL"))
+        if 'Absences - Excused - Gospel' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Gospel'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="GOSP"))
+        if 'Absences - Excused - Grad School/Job Interview' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Grad School/Job Interview'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="INTVW"))
+        if 'Absences - Excused - Graduation' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Graduation'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="GRAD"))
+        if 'Absences - Excused - Meal Out' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Meal Out'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="MEAL"))
+        if 'Absences - Excused - Night Out' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Night Out'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="NIGHT"))
+        if 'Absences - Excused - Other' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Other'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="OTHER"))
+        if 'Absences - Excused - Service' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Service'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="SERV"))
+        if 'Absences - Excused - Sickness' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Sickness'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="SICK"))
+        if 'Absences - Excused - Special' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Special'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="SPECL"))
+        if 'Absences - Excused - Wedding' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Wedding'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="WED"))
+        if 'Absences - Excused - Team Trip' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Team Trip'] = len(IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__contains='A', status__in=['A','S'], type="TTRIP"))
+
+        #TARDIES FILTER
         if 'Tardies - Total' in items_for_query:
           late_tardies = len(qs.query.filter(trainee=trainee, status='T'))
           uniform_tardies = len(qs.query.filter(trainee=trainee, status='U'))
@@ -149,7 +204,21 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
             rtn_data[trainee.full_name]['Tardies - Late'] = late_tardies
           else:
             rtn_data[trainee.full_name]['Tardies - Late'] = len(qs.query.filter(trainee=trainee, status='T'))
-
+        if 'Tardies - Excused' in items_for_query or 'Tardies - Unexcused' in items_for_query:
+          indv_slips = IndividualSlip.objects.filter(trainee=trainee, rolls__in=qs.query, rolls__status__in=['T','U','L'], status='A')
+          if 'Tardies - Excused' in items_for_query:
+            rtn_data[trainee.full_name]['Tardies - Excused'] += len(indv_slips)
+          if 'Tardies - Unexcused' in items_for_query:
+            if 'Tardies - Total' in rtn_data[trainee.full_name]:
+              rtn_data[trainee.full_name]['Tardies - Unexcused'] += rtn_data[trainee.full_name]['Tardies - Total'] - len(indv_slips)
+            else:
+              late_tardies = len(qs.query.filter(trainee=trainee, status='T'))
+              uniform_tardies = len(qs.query.filter(trainee=trainee, status='U'))
+              left_class_tardies = len(qs.query.filter(trainee=trainee, status='L'))
+              rtn_data[trainee.full_name]['Tardies - Unexcused'] += late_tardies + uniform_tardies + left_class_tardies - len(indv_slips)
+          #TODO: group leave slips; PROBLEM - some GroupSlip.events returns empty list???
+          #group_slips = GroupSlip.objects.filter(trainees=trainee, status='A', start__gte=date_from, end__lte=date_to)
+          #print str(group_slips)
 
       """
       for roll in filtered_rolls:
