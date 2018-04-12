@@ -5,6 +5,8 @@
 
 {% block scripts %}
 <script type="text/javascript">
+  var TYPESTRINGS = {"A": "approved", "D": "denied", "S": "TA sister approved"};
+
   var bulkSelect = {};
 
   function select(slipRow, dict) {
@@ -26,7 +28,7 @@
     }
   }
 
-  $(function () {
+  $(function() {
     table = $("#display_leaveslips").DataTable({
       "aaSorting": [],
       "aLengthMenu": [
@@ -36,16 +38,17 @@
       iDisplayLength: 50,
     });
 
-    $('#display_leaveslips tbody').on('click', 'tr', function () {
-      if($(this).prop("type") == "button"){
-        return;
-      }
+    $('#display_leaveslips tbody').on('click', 'tr', function() {
       if ($(this).hasClass('selected')) {
         deselect($(this), bulkSelect);
       }
       else {
         select($(this), bulkSelect);
       }
+    });
+
+    $('#display_leaveslips tbody tr').on('click', 'button', function(e) {
+      e.stopPropagation();
     });
 
     $("#leaveslip_ta_list").on('change', function() {
@@ -58,7 +61,16 @@
 
     $('[data-toggle="tooltip"]').tooltip();
 
-    ajaxify($('.save-first'));
+    ajaxify($('.modify-status'), function(element) {
+      var row = $(element).parentsUntil("tbody")
+      var id = row[row.length-1].id.split("-")[0]
+      row.fadeOut(1000, function() {
+        delete bulkSelect[id]
+        if (Object.keys(bulkSelect).length <= 1) {
+          $(".bulk-actions").hide();
+        }
+      });
+    });
   });
 
   $(document).ready(function(){
@@ -80,14 +92,20 @@
         url: "leaveslips/bulk/update/" + type,
         method: "POST",
         data: slips,
-        success: function () {
+        success: function (data, textStatus, xhr) {
           var keys = Object.keys(slips);
           for (var key in slips) {
             var id = "#" + key + "-" + slips[key];
             $(id).fadeOut(1000);
           }
-          bulkSelect = {};
           $(".bulk-actions").hide();
+
+          var msg = Object.keys(bulkSelect).length.toString() + " leave slips were " + TYPESTRINGS[type];
+          new Notification(Notification.SUCCESS, msg).show();
+          bulkSelect = {};
+        },
+        error: function(xhr, textStatus, errorThrown) {
+          alert(errorThrown);
         }
       })
     }
