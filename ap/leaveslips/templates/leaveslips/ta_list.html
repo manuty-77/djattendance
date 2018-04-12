@@ -8,9 +8,9 @@
   var bulkSelect = {};
 
   function select(slipRow, dict) {
-    var id = slipRow[0].id.split('-')[0];
-    var type = slipRow[0].id.split('-')[1];
-    slipRow.addClass('selected');
+    var id = slipRow[0].id.split("-")[0];
+    var type = slipRow[0].id.split("-")[1];
+    slipRow.addClass("selected");
     dict[id] = type;
     if (Object.keys(dict).length > 1) {
       $(".bulk-actions").show();
@@ -18,8 +18,8 @@
   }
 
   function deselect(slipRow, dict) {
-    var id = slipRow[0].id.split('-')[0];
-    slipRow.removeClass('selected');
+    var id = slipRow[0].id.split("-")[0];
+    slipRow.removeClass("selected");
     delete dict[id];
     if (Object.keys(dict).length <= 1) {
       $(".bulk-actions").hide();
@@ -78,8 +78,14 @@
         url: "leaveslips/bulk/update/" + type,
         method: "POST",
         data: slips,
-        complete: function () {
-          location.reload();
+        success: function () {
+          var keys = Object.keys(slips);
+          for (var key in slips) {
+            var id = "#" + key + "-" + slips[key];
+            $(id).fadeOut(1000);
+          }
+          bulkSelect = {};
+          $(".bulk-actions").hide();
         }
       })
     }
