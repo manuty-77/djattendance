@@ -146,9 +146,9 @@ class Consideration(Survey):
   attend_XB = models.CharField(max_length=5, choices=XB_CHOICES, null=True)
 
   FELLOWSHIP_CHOICES = (
-      ('YES', 'YES'),
-      ('NO', 'NO'),
-      ('OTHER', 'OTHER')
+      ('YES', 'Yes'),
+      ('NO', 'No'),
+      ('OTHER', 'Other')
   )
 
   fellowshipped = models.CharField(max_length=5, choices=FELLOWSHIP_CHOICES, null=True)
