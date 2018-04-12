@@ -116,10 +116,11 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
       group = group.filter(TA=ta)
 
     tr = None  # selected_trainee
-    if int(selected_trainee) > 0:
+    if selected_trainee and int(selected_trainee) > 0:
       tr = Trainee.objects.filter(pk=selected_trainee).first()
       individual = individual.filter(trainee=tr)
       group = group.filter(trainees__in=[tr])
+
 
     if status != "-1":
       if status == 'P':
