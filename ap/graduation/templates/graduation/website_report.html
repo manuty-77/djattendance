@@ -70,13 +70,15 @@
     </thead>
     <tbody>
       {% for c in data %}
-      <tr>
-        <td>{{c.trainee.firstname}}</td>
-        <td>{{c.trainee.lastname}}</td>
-        <!-- <td>{{c.sections}}</td>
-        <td>{{c.participate}}</td>
-        <td>{{c.sentence}}</td>         -->
-      </tr>
+        {% if c.trainee.current_term == 4 %}
+        <tr>
+          <td>{{c.trainee.firstname}}</td>
+          <td>{{c.trainee.lastname}}</td>
+          <!-- <td>{{c.sections}}</td>
+          <td>{{c.participate}}</td>
+          <td>{{c.sentence}}</td>         -->
+        </tr>
+        {% endif %}
       {% endfor %}
     </tbody>
   </table>

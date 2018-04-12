@@ -71,14 +71,16 @@
     </thead>
     <tbody>
       {% for c in data %}
-      <tr>
-        <td>{{c.trainee.firstname}}</td>
-        <td>{{c.trainee.lastname}}</td>
-        <td>{{c.top_experience}}</td>
-        <td>{{c.encouragement}}</td>
-        <td>{{c.overarching_burden}}</td>
-        <td>{{c.highlights}}</td>
-      </tr>
+        {% if c.trainee.current_term == 4 %}
+        <tr>
+          <td>{{c.trainee.firstname}}</td>
+          <td>{{c.trainee.lastname}}</td>
+          <td>{{c.top_experience}}</td>
+          <td>{{c.encouragement}}</td>
+          <td>{{c.overarching_burden}}</td>
+          <td>{{c.highlights}}</td>
+        </tr>
+        {% endif %}
       {% endfor %}
     </tbody>
   </table>
