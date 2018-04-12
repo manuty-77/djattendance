@@ -97,6 +97,11 @@ class LeaveSlip(models.Model, RequestMixin):
     # returns whether slip is individual or group
     return str(self.__class__.__name__)[:-4].lower()
 
+  def get_status_for_message(self):
+    if self.status == 'S':
+      return 'TA sister approved'
+    return self.get_status_display().lower()
+
   def __init__(self, *args, **kwargs):
     super(LeaveSlip, self).__init__(*args, **kwargs)
     self.old_status = self.status

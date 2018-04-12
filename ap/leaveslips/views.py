@@ -133,7 +133,8 @@ def modify_status(request, classname, status, id):
   model = IndividualSlip
   if classname == "group":
     model = GroupSlip
-  list_link = modify_model_status(model, reverse_lazy('leaveslips:ta-leaveslip-list'))(request, status, id)
+  list_link = modify_model_status(model, reverse_lazy('leaveslips:ta-leaveslip-list'))(request, status,
+                id, lambda obj: "%s's %s was %s" % (obj.requester_name, obj._meta.verbose_name, obj.get_status_for_message()))
   if "update" in request.META.get('HTTP_REFERER'):
     next_ls = IndividualSlip.objects.filter(status='P', TA=request.user).first()
     if next_ls:
@@ -158,7 +159,7 @@ def bulk_modify_status(request, status):
   if group:
     GroupSlip.objects.filter(pk__in=group).update(status=status)
   sample = IndividualSlip.objects.get(pk=individual[0]) if individual else GroupSlip.objects.get(pk=group[0])
-  message = "%s leave slips were %s" % (len(individual) + len(group), sample.get_status_display())
+  message = "%s %ss were %s" % (len(individual) + len(group), LeaveSlip._meta.verbose_name, sample.get_status_for_message())
   messages.add_message(request, messages.SUCCESS, message)
   return redirect(reverse_lazy('leaveslips:ta-leaveslip-list'))
 
