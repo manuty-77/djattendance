@@ -120,7 +120,7 @@ class AudioFile(models.Model):
 
   @property
   def display_name(self):
-    return (self.event.name + self.pretraining_class() if self.event else self.audio_file.name.split('.')[0]).replace(SEPARATOR, ' ')
+    return (self.event.name + self.pretraining_class() if self.event else self.audio_file.name.split('.')[0])
 
   @cached_property
   def term(self):
