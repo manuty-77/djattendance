@@ -82,7 +82,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
   def post(self, request, *args, **kwargs):
     data = dict(request.POST.iterlists())
-    print str(data)
+    #print str(data)
     rtn_data = dict() #{TRAINEE_NAME: {Absences - Total: 10, Tardies - Total: 5, ...}, TRAINEE_NAME: ...}
     date_data = dict()
     date_from = datetime.strptime(data['date_from'][0], '%m/%d/%Y')
