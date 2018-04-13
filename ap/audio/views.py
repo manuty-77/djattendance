@@ -1,21 +1,42 @@
 from datetime import date
 import json
-import re
+import os
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views import generic
 from django.core.urlresolvers import reverse_lazy
+from django.core.files import File
+from django.conf import settings
+from django.forms import ValidationError
 
 from braces.views import GroupRequiredMixin
 from rest_framework_bulk import (
     BulkModelViewSet,
 )
 
-from .models import AudioFile, AudioRequest, AUDIO_FILE_FORMAT, PRETRAINING_FORMAT
+from .models import AudioFile, AudioRequest
 from .serializers import AudioRequestSerializer
 from .forms import AudioRequestForm, AudioRequestTACommentForm
+from .models import fs, valid_audiofile_name
 from terms.models import Term
 from aputils.trainee_utils import trainee_from_user
 from aputils.utils import modify_model_status
+
+
+def import_audiofiles():
+  term_folder = settings.AUDIO_FILES_ROOT
+  if not os.path.exists(term_folder):
+    return
+  files = os.listdir(term_folder)
+  imported = set([a.audio_file.name for a in AudioFile.objects.all()])
+  for f in files:
+    if fs.get_valid_name(f) in imported or not valid_audiofile_name(f):
+      continue
+    audio = AudioFile()
+    try:
+      audio.audio_file.name = fs.get_valid_name(f)
+      audio.save()
+    except ValidationError, e:
+      pass
 
 
 class AudioHome(generic.ListView):
@@ -23,6 +44,7 @@ class AudioHome(generic.ListView):
   template_name = 'audio/audiofile_list.html'
 
   def dispatch(self, request, week=None, *args, **kwargs):
+    import_audiofiles()
     term = Term.current_term()
     current_week = term.term_week_of_date(date.today())
     if not week:
@@ -42,13 +64,13 @@ class AudioHome(generic.ListView):
     return super(AudioHome, self).dispatch(request, *args, **kwargs)
 
   def get_queryset(self):
-    files = AudioFile.objects.filter_week(self.week)
     trainee = trainee_from_user(self.request.user)
+    files = AudioFile.objects.filter_list(self.week, trainee)
     for f in files:
       # replace methods with computed values because trainee can't be passed in template
       f.classnotes = f.classnotes(trainee)
-      f.request = f.request(trainee)
       f.can_download = f.can_download(trainee)
+      f.request = f.request(trainee)
       f.has_leaveslip = f.has_leaveslip(trainee)
     return files
 
@@ -105,11 +127,10 @@ class AudioCreate(generic.CreateView):
   def post(self, request):
     uploaded = request.FILES['file']
     audio_file = AudioFile(audio_file=uploaded)
-    fname = uploaded.name
-    if re.match(AUDIO_FILE_FORMAT, fname) or re.match(PRETRAINING_FORMAT, fname):
+    try:
       audio_file.save()
       return JsonResponse({'status': 'ok'})
-    else:
+    except ValidationError:
       return HttpResponseBadRequest('File name format incorrect.')
 
 

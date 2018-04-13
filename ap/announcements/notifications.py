@@ -61,7 +61,7 @@ def bible_reading_announcements(trainee):
   except BibleReading.DoesNotExist:
     return [(messages.WARNING, fmtString.format(url=url))]
   unfinalizedWeeks = []
-  fmtString += ' for week {week} yet. Fellowship with a TA to finalize it.'
+  fmtString += ' for week {week} yet.'
   for w in range(week):
     key = str(term.id) + "_" + str(w)
     if key in reading.weekly_reading_status:
@@ -92,6 +92,9 @@ def attendance_announcements(trainee):
   today = datetime.date.today()
   term = Term.current_term()
   week = term.term_week_of_date(today)
-  weeks = map(str, filter(lambda w: not term.is_attendance_finalized(w, trainee), range(week)))
+  if trainee.self_attendance:
+    weeks = map(str, filter(lambda w: not term.is_attendance_finalized(w, trainee), range(week)))
+  else:
+    weeks = []
   message = 'You have not finalized your attendance for week {week}. Fellowship with a TA to finalize it.'
   return [(messages.WARNING, message.format(week=', '.join(weeks)))] if weeks else []

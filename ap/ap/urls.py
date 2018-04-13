@@ -7,21 +7,17 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
-from rest_framework import routers
-
-from . import views
-from .views import home
+from .views import home, custom404errorview
 from accounts.views import *
 from audio.views import AudioRequestViewSet
 from schedules.views import EventViewSet, ScheduleViewSet, AllEventViewSet, AllScheduleViewSet
-from attendance.views import RollViewSet, AllRollViewSet
+from attendance.views import RollViewSet, AllRollViewSet, AttendanceViewSet, AllAttendanceViewSet
 from leaveslips.views import IndividualSlipViewSet, GroupSlipViewSet, AllIndividualSlipViewSet, AllGroupSlipViewSet
 from books.views import BooksViewSet
 from lifestudies.views import DisciplineSummariesViewSet
-from attendance.views import AttendanceViewSet, AllAttendanceViewSet, RollViewSet, AllRollViewSet
 from seating.views import ChartViewSet, SeatViewSet, PartialViewSet
 from terms.views import TermViewSet
-from services.views import UpdateWorkersViewSet, ServiceSlotWorkloadViewSet, ServiceActiveViewSet, AssignmentViewSet, AssignmentPinViewSet, ServiceTimeViewSet
+from services.views import UpdateWorkersViewSet, ServiceSlotWorkloadViewSet, ServiceActiveViewSet, AssignmentViewSet, AssignmentPinViewSet, ServiceTimeViewSet, ExceptionActiveViewSet
 from meal_seating.views import TableViewSet
 from web_access.forms import WebAccessRequestGuestCreateForm as form
 from classnotes.views import ClassNoteViewSet
@@ -30,6 +26,8 @@ from rest_framework_swagger.views import get_swagger_view
 from rest_framework_nested import routers
 from rest_framework_bulk.routes import BulkRouter
 
+from wiki.urls import get_pattern as get_wiki_pattern
+from django_nyt.urls import get_pattern as get_nyt_pattern
 
 admin.autodiscover()
 
@@ -62,6 +60,7 @@ urlpatterns = [
   url(r'^hc/', include('hc.urls', namespace="hc")),
   url(r'^room_reservations/', include('room_reservations.urls', namespace="room_reservations")),
   url(r'^graduation/', include('graduation.urls', namespace="graduation")),
+  url(r'^xb/', include('xb_application.urls', namespace="xb")),
   # admin urls
   url(r'^adminactions/', include('adminactions.urls')),  # django-adminactions pluggable app
   url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -76,6 +75,7 @@ urlpatterns = [
   url(r'^forms/', include('fobi.urls.view')),
   # Edit URLs
   url(r'^forms/', include('fobi.urls.edit')),
+  url(r'^404/$', custom404errorview),  # for development
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 router = BulkRouter()
@@ -105,6 +105,7 @@ router.register(r'update-workers', UpdateWorkersViewSet, base_name='updateworker
 router.register(r'update-workloads', ServiceSlotWorkloadViewSet, base_name='updateworkload')
 router.register(r'update-active-services', ServiceActiveViewSet, base_name='updateservice')
 router.register(r'update-time-services', ServiceTimeViewSet, base_name='updatetime')
+router.register(r'update-exception-active', ExceptionActiveViewSet)
 router.register(r'service-assignments', AssignmentViewSet, base_name='serviceassignments')
 router.register(r'service-assignments-pin', AssignmentPinViewSet)
 router.register(r'tables', TableViewSet)
@@ -144,9 +145,9 @@ if settings.DEBUG:
     url(r'^__debug__/', include(debug_toolbar.urls)),
   ]
 
-from wiki.urls import get_pattern as get_wiki_pattern
-from django_nyt.urls import get_pattern as get_nyt_pattern
 urlpatterns += [
   url(r'^notifications/', get_nyt_pattern()),
   url(r'wiki', get_wiki_pattern())
 ]
+
+handler404 = 'ap.views.custom404errorview'  # if settings.DEBUG = FALSE

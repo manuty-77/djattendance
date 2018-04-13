@@ -3,8 +3,8 @@ from schedules.models import Event, Schedule
 from accounts.models import Trainee
 from terms.models import Term
 from teams.models import Team
-from aputils.models import QueryFilter
 from django.db.models import Q
+from datetime import *
 
 
 class Command(BaseCommand):
@@ -49,7 +49,6 @@ class Command(BaseCommand):
     twoyear_s.trainees = Trainee.objects.filter(current_term__gte=3)
     twoyear_s.save()
 
-    # campus times
     for team in Team.objects.all():
       schedule = Schedule(
           name=team.name, season='All', term=Term.current_term(),
@@ -61,7 +60,17 @@ class Command(BaseCommand):
       schedule.trainees = Trainee.objects.filter(team=team)
       schedule.save()
 
+    campus_generic = Schedule(name='Generic Campus', season='All', term=Term.current_term(), priority=4)
+    campus_generic.save()
+
+    campus_generic.events = Event.objects.filter(monitor='TM')
+    campus_generic.trainees = Trainee.objects.filter(team__type='CAMPUS')
+    campus_generic.save()
+
   def handle(self, *args, **options):
-    Schedule.objects.all().delete()
-    print("* Populating schedules...")
-    self._create_schedule()
+    #print("* Populating schedules...")
+    #self._create_schedule()
+    print ("* Looking through schedules... ")
+    self._check_schedules()
+    # self._check_events()
+    print 'pulled on', datetime.now()
