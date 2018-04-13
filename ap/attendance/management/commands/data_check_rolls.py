@@ -70,10 +70,22 @@ class Command(BaseCommand):
 
     def find_possible_events(roll):
       # pulls possible events that the roll should be attached to by looking at the atached event's start and end time or name or event type
-      evs = Event.objects.none()
-      for s in roll.trainee.schedules.all():
-        evs |= s.events.filter(weekday=roll.event.weekday)
-      return evs.filter(name=roll.event.name) | evs.filter(type=roll.event.type) | evs.filter(start=roll.event.start)
+      start = roll.event.start
+      end = roll.event.end
+      mid = datetime.combine(date.today(), start) + (datetime.combine(date.today(), end) - datetime.combine(date.today(), start))/2
+
+      evs = []
+      s_priority = 0
+      for s in roll.trainee.schedules.all().exclude(name='Generic Group Events'):
+        if s.active_in_week(ct.term_week_of_date(roll.date)):
+          for ev in s.events.filter(weekday=roll.event.weekday):
+            if datetime.combine(date.today(), ev.start) < mid and datetime.combine(date.today(), ev.end) > mid and s.priority > s_priority:
+              s_priority = s.priority
+              evs.append(ev)
+
+        s_priority = 0
+      return evs
+
 
     for r in rolls:
       try:
