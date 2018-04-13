@@ -151,15 +151,9 @@
   <div class="col-md-12">
     <form method="post">
       {% csrf_token %}
-<<<<<<< HEAD
       View leave slips for:
       <select id="leaveslip_ta_list" name="leaveslip_ta_list">
         <option {% if selected_ta == None %}selected="selected"{% endif %} value="-1">All TA's</option>
-=======
-      <span>View leave slips for: </span>
-      <select id="leaveslip_ta_list" name="leaveslip_ta_list" style="margin-right: 10px;">
-        <option {% if ta == None %}selected="selected"{% endif %} value="-1">All TA's</option>
->>>>>>> dev
         {% for ta in TA_list %}
           <option {% if ta == selected_ta %}selected="selected"{% endif %} value="{{ta.id}}">{{ta.full_name}}</option>
         {% endfor %}
@@ -171,7 +165,6 @@
           <option {% if selected_status == choice.0 %}selected="selected"{% endif %} value="{{choice.0}}">{{choice.1}}</option>
         {% endfor %}
       </select>
-<<<<<<< HEAD
       Filter by trainee:
       <select id="leaveslip_trainee_list" name="leaveslip_trainee_list">
         <option {% if selected_trainee == None %}selected="selected"{% endif %} value="-1">All</option>
@@ -179,9 +172,7 @@
           <option {% if selected_trainee.id == choice.id %}selected="selected"{% endif %} value="{{choice.id}}">{{choice.full_name}}</option>
         {% endfor %}
       </select>
-=======
       <span>Select all: </span><input id="checkall" type="checkbox">
->>>>>>> dev
     </form>
   </div>
 </div>
