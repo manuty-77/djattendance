@@ -92,7 +92,6 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     slip_setting = s.settings.get('leaveslip')
     selected_ta = slip_setting.get('selected_ta', self.request.user.id)
     status = slip_setting.get('selected_status', 'P')
-    status = slip_setting.get('selected_status', 'P')
     selected_trainee = slip_setting.get('selected_trainee', Trainee.objects.first().id)
 
     if self.request.method == 'POST':
@@ -123,6 +122,8 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
 
 
     if status != "-1":
+      si_slips = IndividualSlip.objects.none()
+      sg_slips = GroupSlip.objects.none()
       if status == 'P':
         si_slips = individual.filter(status='S')
         sg_slips = group.filter(status='S')
