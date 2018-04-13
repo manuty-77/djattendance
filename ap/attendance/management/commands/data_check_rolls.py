@@ -173,7 +173,7 @@ class Command(BaseCommand):
   def _mislink_leaveslips(self):
     print RIGHT_NOW
     # Pull all leaveslips submitted by trainee X and has rolls not for trainee X
-    output = '[{0} - {1}]: [{2} - {3}]'
+    output = '[{0} - {1}]: [{2} - {3}]\n'
     output2 = 'For Slip {0}: Possible Roll: {1} [ID: {2}] By: {3}\n'
     bad_slips = []
 
