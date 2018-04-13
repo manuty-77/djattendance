@@ -37,8 +37,15 @@ fs = OverwriteStorage(
 
 
 def order_audio_files(files):
-  files = sorted(files, key=lambda f: f.display_name)
-  return sorted(files, key=lambda f: f.date)
+  lambdas = [
+      lambda f: f.audio_file.name.split(' ')[2],
+      lambda f: f.code,
+      lambda f: f.event.name if f.event else '',
+      lambda f: f.week,
+  ]
+  for l in lambdas:
+      files = sorted(files, key=l)
+  return files
 
 
 def order_decorator(filter_function):
@@ -56,7 +63,7 @@ class AudioFileManager(models.Manager):
     if week == 0:
       return filter(lambda f: f.code == 'PT' and f.term == term, self.all())
     # also filters year: if not a class with a Y1/Y2 designation or if the class year matches trainee's year, add file to files list
-    return filter(lambda f: f.week == week and f.term == term and (not f.year or f.year == (trainee.current_term+1)/2), self.all())
+    return filter(lambda f: f.week == week and f.term == term and f.can_trainee_view(trainee), self.all())
 
   def filter_term(self, term):
     return filter(lambda f: f.term == term, self.all())
@@ -67,7 +74,7 @@ class AudioFileManager(models.Manager):
 
 # class codes: MR, FM, WG, TG, CH, GK, GW, GE, B1/B2, LS, SP, E1/E2, NJ, YP, FW
 # B1-01 2017-03-02 DSady.mp3
-AUDIO_FILE_FORMAT = re.compile(r"^\w{2}-\d{2} \d{4}-\d{2}-\d{2} \w+\.mp3$")
+AUDIO_FILE_FORMAT = re.compile(r"^\w{2}-\d{2} \d{4}-\d{2}-\d{2} .+\.mp3$")
 # PT-00 2017-02-18 An Opening Word DHigashi.mp3
 PRETRAINING_FORMAT = re.compile(r"^\w{2}-\d{2} \d{4}-\d{2}-\d{2} \w+( \w+)* \w+\.mp3$")
 SEPARATOR = ' '
@@ -78,6 +85,27 @@ class AudioFile(models.Model):
   objects = AudioFileManager()
 
   audio_file = models.FileField(storage=fs, validators=[validate_audiofile_name])
+
+  @property
+  def fellowship_code(self):
+    if not self.code == 'FW':
+      return ''
+    return self.audio_file.name.split(SEPARATOR)[2]
+
+  def can_trainee_view(self, trainee):
+    class_visible = not self.year or self.year == (trainee.current_term + 1) / 2
+    code = self.fellowship_code
+    if code == 'YP':
+      fellowship_code = 'YP' in trainee.team.code
+    elif code == 'HC':
+      fellowship_code = trainee.groups.filter(name='HC').exists()
+    elif code == '4T':
+      fellowship_code = trainee.current_term = 4
+    elif code == 'PS':
+      fellowship_code = trainee.groups.filter(name='PSRP_facilitator').exists()
+    else:
+      return True
+    return class_visible and fellowship_code
 
   def __unicode__(self):
     return '<Audio File {0}>'.format(self.audio_file.name)
@@ -92,7 +120,7 @@ class AudioFile(models.Model):
 
   @property
   def display_name(self):
-    return (self.event.name + self.pretraining_class() if self.event else self.audio_file.name.split('.')[0]).replace(SEPARATOR, ' ')
+    return (self.event.name + self.pretraining_class() if self.event else self.audio_file.name.split('.')[0])
 
   @cached_property
   def term(self):
