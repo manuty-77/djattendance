@@ -73,15 +73,17 @@
     </thead>
     <tbody>
       {% for obj in object_list %}
-      <tr>
-        <td>{{obj.trainee.firstname}}</td>
-        <td>{{obj.trainee.lastname}}</td>
-        <td>{{obj.trainee.get_gender_display}}</td>
-        <td>{{obj.get_citizenship_display}}</td>
-        <td>{{obj.last_updated}}</td>
-        <td>{{obj.submitted}}</td>
-        <td><a href="{% url 'xb:xb-application-view' pk=obj.pk %}">Details</a></td>
-      </tr>
+        {% if obj.trainee.current_term == 4 %}
+        <tr>
+          <td>{{obj.trainee.firstname}}</td>
+          <td>{{obj.trainee.lastname}}</td>
+          <td>{{obj.trainee.get_gender_display}}</td>
+          <td>{{obj.get_citizenship_display}}</td>
+          <td>{{obj.last_updated}}</td>
+          <td>{{obj.submitted}}</td>
+          <td><a href="{% url 'xb:xb-application-view' pk=obj.pk %}">Details</a></td>
+        </tr>
+        {% endif %}
       {% endfor %}
     </tbody>
   </table>

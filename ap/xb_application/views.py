@@ -75,4 +75,5 @@ class XBApplicationDetails(DetailView):
     obj = self.get_object()
     ctx['object'] = self.model.objects.filter(pk=obj.id).values()[0]
     ctx['trainee'] = obj.trainee
+    ctx['xb_admin'] = obj.xb_admin
     return ctx
