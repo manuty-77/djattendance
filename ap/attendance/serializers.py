@@ -45,8 +45,10 @@ class RollSerializer(BulkSerializerMixin, ModelSerializer):
       elif roll.trainee.self_attendance and (roll.trainee == submitted_by):
         roll_override.update(**validated_data)
         roll_override.update(last_modified=datetime.now())
+        return validated_data
       elif not roll.trainee.self_attendance:
         roll_override.update(**validated_data)
+        return validated_data
       return validated_data
     elif roll_override.count() > 1:  # if duplicate rolls
       if trainee.self_attendance:
