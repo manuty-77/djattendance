@@ -7,8 +7,8 @@
 {% block title %}{{ page_title }}{% endblock %}
 {% block content %}
 
-<h2>Application for the Boston Extension Training ({{ xb_admin.term }})</h2>
-<h3>Applicant Full Name: {{trainee.fullname}}</h3>
+<h2>Application for the Boston Extension Training ({{term}})</h2>
+<h3>Applicant Full Name: {{trainee}}</h3>
 
 
 <dl class="dl-horizontal">
@@ -45,6 +45,8 @@
       Citizen
     {% elif object.citizenship == "R" %}
       Permanent Resident
+    {% else %}
+      Other: 
     {% endif %}
     {% if object.citizenship_other is not None %}
       {{object.citizenship_other}}
@@ -77,12 +79,10 @@
   <dd>Saved on {{object.date_saved}} and baptized on {{object.date_baptized}}</dd>
   <dt>Church Life</dt>
   <dd>Entered into the church life in {{object.first_church}} on {{object.first_church_date}}</dd>
-  <dt>Graduation Date</dt>
-  <dd>
-    {% if object.ftt_location is not None %}
-      (previously attended {{object.ftt_location}})
-    {% endif %}
-    {{ object.grad_date }}
+  {% if object.ftt_location is not None %}
+    <dt>Previously Attended</dt>
+    <dd>{{object.ftt_location}} and graduated on {{object.grad_date}}</dd>
+  {% endif %}
   </dd>
 </dl>
 
@@ -101,7 +101,6 @@
   </dd>
 
   {% if object.marital == "M" or object.marital == "E" %}
-    <dd>{{object.marital}}</dd>
     <dt>Spouse Name</dt>
     <dd>{{object.spouse_name}} (Age {{object.spouse_age}})</dd>
     <dt>Spouse Occupation</dt>
@@ -109,18 +108,44 @@
     <dt>Date of Marriage</dt>
     <dd>{{object.date_mariage}} with {{object.dependents}} dependents</dd>
     <dt>Spouse's Attitude</dt>
-    <dd>{{object.spouse_attitude}}</dd>
+    <dd>
+      {% if object.spouse_attitude == "A" %}
+        Agree
+      {% elif object.spouse_attitude == "D" %}
+        Disagree
+      {% elif object.spouse_attitude == "B" %}
+        Also Burdened
+      {% endif %}
+    </dd>
   {% endif %}
 </dl>
 
 <dl class="dl-horizontal">
   <dt>Financial Support</dt>
-  <dd>I will be supported by {{object.support_yourself}}, {{object.support_church}}, {{object.support_family}}, {{object.support_other}} with {{other.support_other_explain}}</dd>
-  <dt></dt>
-  <dd>{{object.pertinent_info}}</dd>
+  <dd>I will be supported by 
+    {% if object.support_yourself %}
+      myself, 
+    {% endif %}
+    {% if object.support_church %}
+      church, 
+    {% endif %}
+    {% if object.support_family %}
+      family,
+    {% endif %}
+    {% if object.support_other %}
+      other: {{object.support_other_explain}}
+    {% endif %}
+  </dd>
+  {% if object.pertinent_info is not None %}
+    <dt>Other Pertinent Info</dt>
+    <dd>{{object.pertinent_info}}</dd>
+  {% endif %}
 </dl>
 
 <label>Peronsal Statement</label><br>
-{{object.narrative}}
+{{object.narrative}}<br>
+
+<label>Word Count</label>
+{{narrative_wc}}
 
 {% endblock %}

@@ -57,7 +57,7 @@ class XBApplication(models.Model):
   ATTITUDE_CHOICES = (
       ('A', 'Agree'),
       ('D', 'Disagree'),
-      ('B', 'AlsoBurdened'),
+      ('B', 'Also Burdened'),
   )
 
   SUPPORT_CHOICES = (

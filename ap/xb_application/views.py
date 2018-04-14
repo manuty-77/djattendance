@@ -75,5 +75,6 @@ class XBApplicationDetails(DetailView):
     obj = self.get_object()
     ctx['object'] = self.model.objects.filter(pk=obj.id).values()[0]
     ctx['trainee'] = obj.trainee
-    ctx['xb_admin'] = obj.xb_admin
+    ctx['term'] = obj.xb_admin.term.next_term
+    ctx['narrative_wc'] = len(obj.narrative.split(" "))
     return ctx
