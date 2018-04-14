@@ -69,14 +69,12 @@
     </thead>
     <tbody>
       {% for m in data %}
-        {% if m.trainee.current_term == 4 %}
-        <tr>
-          <td>{{m.trainee.firstname}}</td>
-          <td>{{m.trainee.lastname}}</td>
-          <td>{{m.remembrance_text}}</td>
-          <td>{{m.remembrance_reference}}</td>        
-        </tr>
-        {% endif %}
+      <tr>
+        <td>{{m.trainee.firstname}}</td>
+        <td>{{m.trainee.lastname}}</td>
+        <td>{{m.remembrance_text}}</td>
+        <td>{{m.remembrance_reference}}</td>        
+      </tr>
       {% endfor %}
     </tbody>
   </table>
