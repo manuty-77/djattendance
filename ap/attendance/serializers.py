@@ -38,6 +38,7 @@ class RollSerializer(BulkSerializerMixin, ModelSerializer):
     elif roll_override.count() == 1:  # if a roll already exists,
       if status == 'P' and not leaveslips.exists():  # if input roll is "P" and no leave slip, delete it
         roll_override.delete()
+        return validated_data
       roll = roll_override.first()
       if roll.trainee.self_attendance and (roll.trainee != submitted_by):
         return Roll.objects.create(**validated_data)
