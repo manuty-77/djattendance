@@ -4,6 +4,7 @@ from schedules.models import Event
 from terms.models import Term
 from datetime import datetime
 from leaveslips.models import IndividualSlip
+from django.db import Q
 
 import sys
 from contextlib import contextmanager
@@ -82,7 +83,7 @@ class Command(BaseCommand):
       s_priority = 0
       for s in roll.trainee.schedules.all().exclude(name='Generic Group Events'):
         if s.active_in_week(ct.term_week_of_date(roll.date)):
-          for ev in s.events.filter(weekday=roll.event.weekday):
+          for ev in s.events.filter(weekday=roll.event.weekday).exclude(~Q(day=None)):
             if datetime.combine(today, ev.start) < mid and datetime.combine(today, ev.end) > mid and s.priority > s_priority:
               s_priority = s.priority
               evs.append(ev)
