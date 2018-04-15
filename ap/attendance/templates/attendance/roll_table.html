@@ -113,30 +113,33 @@
     action: toggle_function(2),
   };
 
-  var q_year = [true, true];
+  var q_term = [true, true, true, true];
   var q_gender = [true, true, true];
   var r_term = "";
 
   function evalYear() {
     r_term = "";
-    if (q_year[0]) {
-      r_term += "1|2|";
-    }
-    if (q_year[1]) {
-      r_term += "3|4";
+    for (i=0; i<5; i++) {
+      if (q_term[i]) {
+        r_term += (i+1)+"|";
+      }
     }
     r_term = "("+r_term.substring(0, r_term.length-1)+")";
     table.column(1).search(r_term, true, false).draw();
   }
 
-  let year_filter = (year) => {
+  let term_filter = (terms) => {
     return function() {
       if (this.active()) {
         this.active("false");
-        q_year[year-1] = false;
+        for (let term in terms) {
+          q_term[term] = false;
+        }
       } else {
         this.active("true");
-        q_year[year-1] = true;
+        for (let term in terms) {
+          q_term[term] = true;
+        }
       }
       evalYear();
     }
@@ -144,12 +147,12 @@
   $.fn.dataTable.ext.buttons.first_year = {
     text: '1st Year',
     init: init_function,
-    action: year_filter(1),
+    action: term_filter([0, 1]),
   };
   $.fn.dataTable.ext.buttons.second_year = {
     text: '2nd Year',
     init: init_function,
-    action: year_filter(2),
+    action: term_filter([2, 3]),
   };
 
   function evalGender() {
@@ -209,13 +212,11 @@
       },
       paging: false,
       iDisplayLength: -1,
-      {% if event_type != 'Y' %}
+      {% if event_type != 'H' and event_type != 'T' and event_type != 'Y' %}
       scrollY: '45vh',
       scrollCollapse: true,
       scrollX: true,
-      {% else %}
-      autowidth: true,
-
+      autoWidth: true,
       {% endif %}
       dom: '<"row"<"col-sm-6"lB><"col-sm-6"f>>' +
       '<"row"<"col-sm-12"<"table-responsive"tr>>>' +
@@ -304,12 +305,6 @@
       $("#team_menu").on("change", function(e) {
         $(e.currentTarget).closest("form").submit();
       });
-
-      table.destroy()
-      //remove the nth column
-      $('table tr').find('td:eq(0)').remove();
-      $('table tr').find('td:eq(0)').remove();
-
     } else if ("{{event_type}}" == "H") {
       {% for h in houses %}
         $("#house_menu").append($("<option />").val("{{h.name}}").text("{{h.name}}"));
@@ -319,12 +314,6 @@
       $("#house_menu").on("change", function(e) {
         $(e.currentTarget).closest("form").submit();
       });
-
-      table.destroy()
-      //remove the nth column
-      $('table tr').find('td:eq(0)').remove();
-      $('table tr').find('td:eq(0)').remove();
-
     }
   });
 </script>
