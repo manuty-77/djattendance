@@ -53,17 +53,17 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
     date_data['date_to'] = str(date_to)
     delta = date_to - date_from
 
-    trainees = Trainee.objects.all()
+    filtered_trainees = Trainee.objects.all()
 
     if 'gender' in data.keys():
       gender = data['gender']
 
     if "Male" not in gender:
-      trainees = trainees.filter(gender="S")
+      filtered_trainees = filtered_trainees.filter(gender="S")
     elif "Female" not in gender:
-      trainees = trainees.filter(gender="B")
+      filtered_trainees = filtered_trainees.filter(gender="B")
     elif "Male" not in gender and "Female" not in gender:
-      trainees = Trainee.objects.none()
+      filtered_trainees = Trainee.objects.none()
       return rtn_data
 
     terms_filter = []
@@ -72,7 +72,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
       terms_filter = [int(s) for s in data['term'] if s.isdigit()]
 
     if 'general_report' in data.keys():
-      filtered_trainees = trainees.filter(current_term__in=terms_filter)
+      filtered_trainees = filtered_trainees.filter(current_term__in=terms_filter)
       filtered_rolls = Roll.objects.filter(trainee__in=filtered_trainees, date__range=[date_from, date_to]).exclude(status='P')
       pickled_rolls = pickle.dumps(filtered_rolls)
 
@@ -288,6 +288,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
     if 'general_item' in data.keys():
       for trainee in filtered_trainees:
+        rtn_data[trainee.full_name] = {}
         for general_item in data['general_item']:
           if general_item == "Gender":
             rtn_data[trainee.full_name]["Gender"] = trainee.gender
