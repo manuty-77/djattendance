@@ -113,46 +113,45 @@
     action: toggle_function(2),
   };
 
-  var q_term = [true, true, true, true];
+  var q_year = [true, true];
   var q_gender = [true, true, true];
   var r_term = "";
 
   function evalYear() {
-    r_term = "";
-    for (i=0; i<5; i++) {
-      if (q_term[i]) {
-        r_term += (i+1)+"|";
-      }
+    r_term = "5";
+    if (q_year[0]) {
+      r_term += "1|2|";
+    }
+    if (q_year[1]) {
+      r_term += "3|4";
     }
     r_term = "("+r_term.substring(0, r_term.length-1)+")";
     table.column(1).search(r_term, true, false).draw();
   }
 
-  let term_filter = (terms) => {
+  let year_filter = (year) => {
     return function() {
       if (this.active()) {
         this.active("false");
-        for (let term in terms) {
-          q_term[term] = false;
-        }
+        q_year[year-1] = false;
       } else {
         this.active("true");
-        for (let term in terms) {
-          q_term[term] = true;
-        }
+        q_year[year-1] = true;
       }
       evalYear();
     }
   }
+
   $.fn.dataTable.ext.buttons.first_year = {
     text: '1st Year',
     init: init_function,
-    action: term_filter([0, 1]),
+    action: year_filter(1),
   };
+
   $.fn.dataTable.ext.buttons.second_year = {
     text: '2nd Year',
     init: init_function,
-    action: term_filter([2, 3]),
+    action: year_filter(2),
   };
 
   function evalGender() {
@@ -193,7 +192,7 @@
   $.fn.dataTable.ext.buttons.self_attendance = {
     text: 'Self Attendance',
     init: function(){
-      table.column(3).search("False").draw()
+      
     },
     action: function(){
       table.draw()
