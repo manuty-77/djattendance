@@ -129,14 +129,14 @@
     table.column(1).search(r_term, true, false).draw();
   }
 
-  let term_filter = (term) => {
+  let year_filter = (year) => {
     return function() {
       if (this.active()) {
         this.active("false");
-        q_year[term-1] = false;
+        q_year[year-1] = false;
       } else {
         this.active("true");
-        q_year[term-1] = true;
+        q_year[year-1] = true;
       }
       evalYear();
     }
@@ -144,12 +144,12 @@
   $.fn.dataTable.ext.buttons.first_year = {
     text: '1st Year',
     init: init_function,
-    action: term_filter(1),
+    action: year_filter(1),
   };
   $.fn.dataTable.ext.buttons.second_year = {
     text: '2nd Year',
     init: init_function,
-    action: term_filter(2),
+    action: year_filter(2),
   };
 
   function evalGender() {
