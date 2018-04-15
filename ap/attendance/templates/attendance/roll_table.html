@@ -190,6 +190,19 @@
     action: gender_filter(1),
   };
 
+  $.fn.dataTable.ext.buttons.self_attendance = {
+    text: 'Self Attendance',
+    init: function(){
+      table.column(3).search("False").draw()
+    },
+    action: function(){
+      table.draw()
+
+    }
+  }
+
+
+
   $(function() {
     setWeeks();
     $("#week_menu option[id='week_{{ current_week }}']").attr("selected", "selected");
@@ -199,11 +212,7 @@
       ordering: true,
       columnDefs: [
         {
-          "targets": [ 1 ],
-          "visible": false
-        },
-        {
-          "targets": [ 2 ],
+          "targets": [ 1, 2, 3 ],
           "visible": false
         }
       ],
@@ -233,6 +242,11 @@
           text: 'Filters',
           buttons: ["first_year", "second_year", "brothers", "sisters"]
         },
+        {
+          extend: 'collection',
+          text: 'Filters',
+          buttons: "self_attendance",
+        }
       ],
     });
 
@@ -371,12 +385,14 @@
               <th class="date">Date</th>
               <td></td>
               <td></td>
+              <td></td>
               {% for event in event_list %}
               <th class="date">{{event.start_datetime|date:"D (m/d)"}}</th>
               {% endfor %}
             </tr>
             <tr>
               <th>Roll</th>
+              <td></td>
               <td></td>
               <td></td>
               {% for event in event_list %}
@@ -387,12 +403,14 @@
               <th>Time</th>
               <td></td>
               <td></td>
+              <td></td>
               {% for event in event_list %}
               <th>{{event.start_datetime|date:"P"}}</th>
               {% endfor %}
             </tr>
             <tr>
               <th>Set all</th>
+              <td></td>
               <td></td>
               <td></td>
               {% for event in event_list %}
@@ -431,6 +449,7 @@
               </th>
               <td>{{t.current_term}}</td>
               <td>{{t.gender}}</td>
+              <td>{{t.self_attendance}}</td>
               {% for event in event_list %}
               {% with events=trainees_event_list|get_item:t %}
               {% if event in events %}
