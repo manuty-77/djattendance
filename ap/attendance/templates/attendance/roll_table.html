@@ -207,8 +207,6 @@
     }
   }
 
-
-
   $(function() {
     setWeeks();
     $("#week_menu option[id='week_{{ current_week }}']").attr("selected", "selected");
@@ -238,6 +236,7 @@
       '<"row"<"col-sm-5"i><"col-sm-7"p>>',
       buttons: [
         // "order_by",
+        {% ifusergroup attendance_monitors|dev|training_assistant %}
         {
           extend: 'collection',
           text: 'Show/Hide Headers',
@@ -248,11 +247,15 @@
           text: 'Filters',
           buttons: ["first_year", "second_year", "brothers", "sisters"]
         },
+        
         "self_attendance",
+        {% endifusergroup %}
       ],
     });
 
+    {% ifusergroup attendance_monitors|dev|training_assistant %}
     selfattendance_filter("False")
+    {% endifusergroup %}
 
     function getParamsForColumn(index) {
       var selects = $('.set_all');
