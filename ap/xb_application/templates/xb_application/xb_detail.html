@@ -7,6 +7,22 @@
 {% block title %}{{ page_title }}{% endblock %}
 {% block content %}
 
+{% block references %}
+<style type="text/css">
+  dt, dd, label, p, span {
+    font-size: 20px;
+  }
+
+  .dl-horizontal dt {
+    width: 180px;
+  }
+
+  .dl-horizontal dd {
+    margin-left: 200px;
+  }
+</style>
+{% endblock %}
+
 <h2>Application for the Boston Extension Training ({{term}})</h2>
 <h3>Applicant Full Name: {{trainee}}</h3>
 
@@ -122,18 +138,18 @@
 
 <dl class="dl-horizontal">
   <dt>Financial Support</dt>
-  <dd>I will be supported by 
+  <dd> 
     {% if object.support_yourself %}
-      myself, 
+      Myself, 
     {% endif %}
     {% if object.support_church %}
-      church, 
+      Church, 
     {% endif %}
     {% if object.support_family %}
-      family,
+      Family,
     {% endif %}
     {% if object.support_other %}
-      other: {{object.support_other_explain}}
+      Other: {{object.support_other_explain}}
     {% endif %}
   </dd>
   {% if object.pertinent_info is not None %}
@@ -142,10 +158,10 @@
   {% endif %}
 </dl>
 
-<label>Peronsal Statement</label><br>
-{{object.narrative}}<br>
+<label>Personal Statement</label><br>
+<p>{{object.narrative}}</p>
 
 <label>Word Count</label>
-{{narrative_wc}}
+<span>{{narrative_wc}}</span>
 
 {% endblock %}
