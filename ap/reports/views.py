@@ -98,8 +98,8 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
         #get number of LS summaries
         if "Number of LS" in items_for_query:
-          rtn_data[trainee.full_name]['Number of LS'] = Discipline.objects.filter(trainee=trainee).count()
-        
+          rtn_data[trainee.full_name]['Number of LS'] = Discipline.objects.filter(trainee=trainee).count()  
+
         group_slips_for_trainee = pgsq.query.filter(trainees=trainee)
         
         trainee_rolls = qs_rolls.query.filter(trainee=trainee)
@@ -108,9 +108,13 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         qs_trainee_rolls = Roll.objects.all()
         qs_trainee_rolls.query = pickled_trainee_query
 
-        rolls_covered_in_group_slips = Roll.objects.none()
+        if "Classes Missed" in items_for_query:
+          rtn_data[trainee.full_name]['Classes Missed'] = qs_trainee_rolls.query.filter(status='A',event__type='C').count()
 
-        #DEALING WITH GROUP SLIPS FOR SPECIAL EXCUSED ABSENCES (next 35 lines of code)
+        absent_rolls_covered_in_group_slips = Roll.objects.none()
+        tardy_rolls_covered_in_group_slips = Roll.objects.none()
+
+        #DEALING WITH GROUP SLIPS FOR SPECIAL EXCUSED ABSENCES (next 45 lines of code)
         #get rolls for special group slips; this is needed later for excluding these rolls from individual slips that cover these same rolls
         rolls_covered_in_conference_group_slips = Roll.objects.none()
         rolls_covered_in_fellowship_group_slips = Roll.objects.none()
@@ -123,31 +127,42 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         #necessary to do this due to slip.events function not working properly....
         #Calculate for excused absences that can be covered by a group slip - conference, fellowship, gospel, night out, other, service, team trip
         for slip in group_slips_for_trainee:
-          rolls_in_slip = qs_trainee_rolls.query.filter(event__start__gte=slip.start, event__end__lte=slip.end).exclude(status='P')
-          rolls_covered_in_group_slips = rolls_covered_in_group_slips | rolls_in_slip
+          rolls_in_slip = qs_trainee_rolls.query.filter(event__start__gte=slip.start, event__end__lte=slip.end, status='A')
+          absent_rolls_covered_in_group_slips = absent_rolls_covered_in_group_slips | rolls_in_slip
+          tardy_rolls_covered_in_group_slips = tardy_rolls_covered_in_group_slips | qs_trainee_rolls.query.filter(event__start__gte=slip.start, event__end__lte=slip.end, status__in=['T', 'U', 'L'])
           if 'Absences - Excused - Conference' in items_for_query and slip.type == 'CONF':
-            rolls_covered_in_conference_group_slips = rolls_covered_in_conference_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Conference'] = rolls_covered_in_conference_group_slips.count()
+            rolls_covered_in_conference_group_slips = rolls_covered_in_conference_group_slips | rolls_in_slip
           if 'Absences - Excused - Fellowship' in items_for_query and slip.type == 'FWSHP':
-            rolls_covered_in_fellowship_group_slips = rolls_covered_in_fellowship_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Fellowship'] = rolls_covered_in_fellowship_group_slips.count()
+            rolls_covered_in_fellowship_group_slips = rolls_covered_in_fellowship_group_slips | rolls_in_slip
           if 'Absences - Excused - Gospel' in items_for_query and slip.type == 'GOSP':
-            rolls_covered_in_gospel_group_slips = rolls_covered_in_gospel_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Gospel'] = rolls_covered_in_gospel_group_slips.count()
+            rolls_covered_in_gospel_group_slips = rolls_covered_in_gospel_group_slips | rolls_in_slip
           if 'Absences - Excused - Night Out' in items_for_query and slip.type == 'NIGHT':
-            rolls_covered_in_night_out_group_slips = rolls_covered_in_night_out_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Night Out'] = rolls_covered_in_night_out_group_slips.count()
+            rolls_covered_in_night_out_group_slips = rolls_covered_in_night_out_group_slips | rolls_in_slip
           if 'Absences - Excused - Other' in items_for_query and slip.type == 'OTHER':
-            rolls_covered_in_other_group_slips = rolls_covered_in_other_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Other'] = rolls_covered_in_other_group_slips.count()
+            rolls_covered_in_other_group_slips = rolls_covered_in_other_group_slips | rolls_in_slip
           if 'Absences - Excused - Service' in items_for_query and slip.type == 'SERV':
-            rolls_covered_in_service_group_slips = rolls_covered_in_service_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Service'] = rolls_covered_in_service_group_slips.count()
+            rolls_covered_in_service_group_slips = rolls_covered_in_service_group_slips | rolls_in_slip
           if 'Absences - Excused - Team Trip' in items_for_query and slip.type == 'TTRIP':
-            rolls_covered_in_team_trip_group_slips = rolls_covered_in_team_trip_group_slips | rolls_in_slip.filter(status='A')
-            rtn_data[trainee.full_name]['Absences - Excused - Team Trip'] = rolls_covered_in_team_trip_group_slips.count()
+            rolls_covered_in_team_trip_group_slips = rolls_covered_in_team_trip_group_slips | rolls_in_slip
 
-        #DEALING WITH INDIVIDUAL SLIPS FOR SPECIAL EXCUSED ABSENCES (next 92 lines of code)
+        #add count of absent rolls covered by group slips to special excused absences count; deal with individual slips after this block of code
+        if 'Absences - Excused - Conference' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Conference'] = rolls_covered_in_conference_group_slips.count()
+        if 'Absences - Excused - Fellowship' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Fellowship'] = rolls_covered_in_fellowship_group_slips.count()
+        if 'Absences - Excused - Gospel' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Gospel'] = rolls_covered_in_gospel_group_slips.count()
+        if 'Absences - Excused - Night Out' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Night Out'] = rolls_covered_in_night_out_group_slips.count()
+        if 'Absences - Excused - Other' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Other'] = rolls_covered_in_other_group_slips.count()
+        if 'Absences - Excused - Service' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Service'] = rolls_covered_in_service_group_slips.count()
+        if 'Absences - Excused - Team Trip' in items_for_query:
+          rtn_data[trainee.full_name]['Absences - Excused - Team Trip'] = rolls_covered_in_team_trip_group_slips.count()
+
+
+        #DEALING WITH INDIVIDUAL SLIPS FOR SPECIAL EXCUSED ABSENCES (next 91 lines of code)
         primary_indv_slip_filter = IndividualSlip.objects.filter(rolls__in=qs_trainee_rolls.query, rolls__status__contains='A', status__in=['A','S'])
         pickled_indv_slip_filter = pickle.dumps(primary_indv_slip_filter)
 
@@ -156,16 +171,15 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
         indv_slip_qs = IndividualSlip.objects.all()
         indv_slip_qs.query = pickled_indv_slip_filter_qs
 
-        #ABSENCES FILTER
         if 'Absences - Total' in items_for_query:
           rtn_data[trainee.full_name]['Absences - Total'] = qs_trainee_rolls.query.filter(status='A').count()
         if 'Absences - Excused' in items_for_query:
           #get all absent rolls excused by individual leave slips (exclude rolls covered in group slips, in case a trainee has both a group and individual leave slip for the same roll)
-          indv_slips = indv_slip_qs.query.exclude(rolls__in=rolls_covered_in_group_slips.filter(status='A'))
+          indv_slips = indv_slip_qs.query.exclude(rolls__in=absent_rolls_covered_in_group_slips)
           rtn_data[trainee.full_name]['Absences - Excused'] += indv_slips.values_list('rolls').count()
 
           #get all absent rolls excused by groups slips
-          rtn_data[trainee.full_name]['Absences - Excused'] += rolls_covered_in_group_slips.filter(status='A').count()
+          rtn_data[trainee.full_name]['Absences - Excused'] += absent_rolls_covered_in_group_slips.count()
           
         if 'Absences - Unexcused' in items_for_query:
           if 'Absences - Total' in rtn_data[trainee.full_name] and 'Absences - Excused' in rtn_data[trainee.full_name]:
@@ -174,10 +188,10 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
           else:
             #get all rolls where trainee is absent and minus those excused by group and individual leave slips
             rtn_data[trainee.full_name]['Absences - Unexcused'] = qs_trainee_rolls.query.filter(status='A').count() \
-            - rolls_covered_in_group_slips.filter(status='A').count()
+            - absent_rolls_covered_in_group_slips.count()
             
             #exclude rolls covered in group leave slips
-            indv_slips = indv_slip_qs.query.exclude(rolls__in=rolls_covered_in_group_slips.filter(status='A'))
+            indv_slips = indv_slip_qs.query.exclude(rolls__in=absent_rolls_covered_in_group_slips)
             rtn_data[trainee.full_name]['Absences - Unexcused'] -= indv_slips.values_list('rolls').count()
 
         if 'Absences - Unexcused and Sickness' in items_for_query:
@@ -190,9 +204,9 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
           else:
             #get all rolls where trainee is absent and minus those excused by group and individual leave slips
             rtn_data[trainee.full_name]['Absences - Unexcused and Sickness'] = qs_trainee_rolls.query.filter(status='A').count() \
-            - rolls_covered_in_group_slips.filter(status='A').count()
+            - absent_rolls_covered_in_group_slips.count()
 
-            indv_slips = indv_slip_qs.query.exclude(rolls__in=rolls_covered_in_group_slips.filter(status='A'))
+            indv_slips = indv_slip_qs.query.exclude(rolls__in=absent_rolls_covered_in_group_slips)
             rtn_data[trainee.full_name]['Absences - Unexcused and Sickness'] -= indv_slips.values_list('rolls').count()
 
         if 'Absences - Excused - Conference' in items_for_query:
@@ -263,19 +277,19 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
           else:
             rtn_data[trainee.full_name]['Tardies - Late'] = qs_trainee_rolls.query.filter(status='T').count()
         if 'Tardies - Excused' in items_for_query or 'Tardies - Unexcused' in items_for_query:
-          indv_slips = IndividualSlip.objects.filter(rolls__in=qs_trainee_rolls.query, rolls__status__in=['T','U','L'], status__in=['A','S']).exclude(rolls__in=rolls_covered_in_group_slips.filter(status__in=['T', 'U', 'L']))
+          indv_slips = IndividualSlip.objects.filter(rolls__in=qs_trainee_rolls.query, rolls__status__in=['T','U','L'], status__in=['A','S']).exclude(rolls__in=tardy_rolls_covered_in_group_slips)
           if 'Tardies - Excused' in items_for_query:
             #individual slips
             rtn_data[trainee.full_name]['Tardies - Excused'] += indv_slips.values_list('rolls').count()
             #group slips
-            rtn_data[trainee.full_name]['Tardies - Excused'] += rolls_covered_in_group_slips.filter(status__in=['T','U','L']).count()
+            rtn_data[trainee.full_name]['Tardies - Excused'] += tardy_rolls_covered_in_group_slips.count()
           if 'Tardies - Unexcused' in items_for_query:
             if 'Tardies - Total' in rtn_data[trainee.full_name]:
               rtn_data[trainee.full_name]['Tardies - Unexcused'] += rtn_data[trainee.full_name]['Tardies - Total']
               #individual slips
               rtn_data[trainee.full_name]['Tardies - Unexcused'] -= indv_slips.values_list('rolls').count()
               #group slips
-              rtn_data[trainee.full_name]['Tardies - Unexcused'] -= rolls_covered_in_group_slips.filter(status__in=['T','U','L']).count()
+              rtn_data[trainee.full_name]['Tardies - Unexcused'] -= tardy_rolls_covered_in_group_slips.count()
             else:
               late_tardies = qs_trainee_rolls.query.filter(status='T').count()
               uniform_tardies = qs_trainee_rolls.query.filter(status='U').count()
@@ -284,7 +298,7 @@ class GeneratedReport(LoginRequiredMixin, GroupRequiredMixin, ListView):
               #individual slips
               rtn_data[trainee.full_name]['Tardies - Unexcused'] -= indv_slips.values_list('rolls').count()
               #group slips
-              rtn_data[trainee.full_name]['Tardies - Unexcused'] -= rolls_covered_in_group_slips.filter(status__in=['T','U','L']).count()
+              rtn_data[trainee.full_name]['Tardies - Unexcused'] -= tardy_rolls_covered_in_group_slips.count()
 
     if 'general_item' in data.keys():
       for trainee in filtered_trainees:
