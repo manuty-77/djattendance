@@ -95,7 +95,7 @@ class ExamTemplateListView(ListView):
       sessions = Session.objects.filter(trainee=user, is_graded=True)
       exams = []
       for session in sessions:
-        if session.exam is None:
+        if session.exam is not None:
           exams.append(session.exam)
         else:
           session.delete()
