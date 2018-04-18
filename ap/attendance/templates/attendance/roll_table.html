@@ -236,6 +236,8 @@
       '<"row"<"col-sm-5"i><"col-sm-7"p>>',
       buttons: [
         // "order_by",
+        // only attendance monitors, devs, and tas can view these controls for the datatable
+        // this allows the display of headers and filter by trainee year, gender and self attendance
         {% ifusergroup attendance_monitors|dev|training_assistant %}
         {
           extend: 'collection',
@@ -253,9 +255,8 @@
       ],
     });
 
-    {% ifusergroup attendance_monitors|dev|training_assistant %}
-    selfattendance_filter("False")
-    {% endifusergroup %}
+    // normal HC or TM or YPC can only see trainees not on self-attendance
+    selfattendance_filter("False")    
 
     function getParamsForColumn(index) {
       var selects = $('.set_all');
