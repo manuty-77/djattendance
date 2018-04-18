@@ -51,6 +51,11 @@ class Command(BaseCommand):
         dest='mislink_slips',
         help='Pull all slips with mislink in rolls',
     )
+    parser.add_argument(  # --ml 1
+        '--id',
+        dest='invalid_duplicates',
+        help='Pulls all duplicate rolls that are invalid',
+    )
 
   file_name = '../mislink_rolls' + RIGHT_NOW + '.txt'
 
@@ -200,6 +205,14 @@ class Command(BaseCommand):
         print output.format(slip, '!', e, '!')
     print 'bad slips: ' + str(len(bad_slips)) + '\n'
 
+
+  # @open_file(file_name)
+  def _invalid_duplicatrolls(self):
+    print RIGHT_NOW
+
+
+
+
   def handle(self, *args, **options):
     allcmd = False
     if all(options[x] is None for x in ['mislink_rolls', 'ghost_rolls', 'mislink_slips']):
@@ -213,3 +226,7 @@ class Command(BaseCommand):
     if allcmd or options['mislink_slips']:
       print('* Pulling leaveslips with rolls that do not belong to submitting trainee')
       self._mislink_leaveslips()
+    if allcmd or options['invalid_duplicates']:
+      print('* Pulling all rolls that have an invalid duplicate')
+      self._invalid_duplicatrolls()
+
