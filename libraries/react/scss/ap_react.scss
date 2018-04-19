@@ -136,6 +136,9 @@ textarea {
     border: solid thin #ccc;
     margin:0;
     margin-top:-1px;
+    &__trainee-group {
+      margin-bottom: 10px;
+    }
     &__trainee-select {
       margin-bottom: 10px;
     }
