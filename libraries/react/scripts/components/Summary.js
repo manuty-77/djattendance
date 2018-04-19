@@ -43,7 +43,7 @@ const Summary = (p) => {
           <div className="col-xs-2">Reason</div>
         </div>
         {p.leaveslips.sort((s1, s2) => s1.submitted > s2.submitted ? -1 : 1)
-          .map((slip, i) => <SlipDetail trainee={p.trainee} slip={slip} key={i} onClick={() => p.editSlip(slip)} deleteSlip={p.deleteSlip} /> )}
+          .map((slip, i) => <SlipDetail slip={slip} key={i} onClick={() => p.editSlip(slip)} deleteSlip={p.deleteSlip} /> )}
         </div> : ''
       }
 
