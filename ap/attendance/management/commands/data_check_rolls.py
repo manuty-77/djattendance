@@ -1,4 +1,6 @@
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import Group
+from accounts.models import *
 from attendance.models import Roll
 from schedules.models import Event
 from terms.models import Term
@@ -51,8 +53,8 @@ class Command(BaseCommand):
         dest='mislink_slips',
         help='Pull all slips with mislink in rolls',
     )
-    parser.add_argument(  # --ml 1
-        '--id',
+    parser.add_argument(  # --du 1
+        '--du',
         dest='invalid_duplicates',
         help='Pulls all duplicate rolls that are invalid',
     )
@@ -210,12 +212,39 @@ class Command(BaseCommand):
   def _invalid_duplicatrolls(self):
     print RIGHT_NOW
 
+    AMs = User.objects.filter(groups__name__in='attendance_monitors')
+    for t in Trainee.objects.all().order_by('lastname', 'firstname'):
+      invalid_duplicates = False
+      duplicate_rolls = []
+      trainee_rolls = Roll.objects.filter(trainee=t).order_by('date', 'event').distinct('date', 'event')
+      for roll in trainee_rolls:
+        dup = Roll.objects.filter(trainee=t, event=roll.event, date=roll.date,)
+        
+        if dup.count() == 2:
+          if not t.self_attendance:
+            invalid_duplicates = True
+            duplicate_rolls.append(dup)
+          else:
+            if dup.filter(submitted_by=t).count() == 1 and dup.filter(submitted_by__in=AMs).count() == 1:
+              pass
+            else:
+              invalid_duplicates = True
+              duplicate_rolls.append(dup)
+        elif dup.count() > 2:
+          invalid_duplicates = True
+          duplicate_rolls.append(dup)
 
 
+      if invalid_duplicates:
+        print t.full_name2
+        for qs in duplicate_rolls:
+          for r in qs:
+            print "Roll ID", r.id, r, "submitted by", r.submitted_by
+        print '\n'
 
   def handle(self, *args, **options):
     allcmd = False
-    if all(options[x] is None for x in ['mislink_rolls', 'ghost_rolls', 'mislink_slips']):
+    if all(options[x] is None for x in ['mislink_rolls', 'ghost_rolls', 'mislink_slips', 'invalid_duplicates']):
       allcmd = True
     if allcmd or options['mislink_rolls']:
       print('* Pulling Rolls with mislinked Trainee...')
