@@ -54,7 +54,7 @@ class Command(BaseCommand):
         help='Pull all slips with mislink in rolls',
     )
     parser.add_argument(  # --du 1
-        '--du',
+        '--id',
         dest='invalid_duplicates',
         help='Pulls all duplicate rolls that are invalid',
     )
@@ -141,20 +141,21 @@ class Command(BaseCommand):
         error_rolls.append(r)
         errors += 1
         print output.format(str(r.id), e, r.submitted_by)
-    print 'bad rolls: ' + str(len(bad_rolls)) + '\n'
-    print 'Due to no schedules for the roll: ' + str(no_sched) + '\n'
-    print 'Elective related (Gk, Char, Ger): ' + str(wrong_elective) + '\n'
-    print 'Cerritos College Related: ' + str(crc) + '\n'
-    print 'YP-LB Related: ' + str(yp_lb) + '\n'
-    print 'YP-IRV Related: ' + str(yp_irv) + '\n'
-    print 'errors: ' + str(errors) + '\n'
+    print 'bad rolls: ' + str(len(bad_rolls))
+    print 'Due to no schedules for the roll: ' + str(no_sched)
+    print 'Elective related (Gk, Char, Ger): ' + str(wrong_elective)
+    print 'Cerritos College Related: ' + str(crc)
+    print 'YP-LB Related: ' + str(yp_lb)
+    print 'YP-IRV Related: ' + str(yp_irv)
+    print 'errors: ' + str(errors)
     print '--------------- Error Rolls -------------'
     for er in error_rolls:
       print str(er.id) + ' ' + str(er.trainee) + ' ' + str(er.event) + ' ' + str(er.date) + ' ' + str(er.submitted_by) + ' ' + str(er.status) + ' ' + str(er.last_modified)
     
-    AMs = Trainee.objects.filter(groups__name__in='attendance_monitors')
+    AMs = Trainee.objects.filter(groups__name='attendance_monitors')
     print '------------ For Attendanece Monitros ----------'
-    for am in AMS:
+    for am in AMs:
+      print am
       for r in [r for r in bad_rolls if r.submitted_by==am]:
         print "Roll ID", r.id, r, "submitted by", r.submitted_by, "on", r.last_modified
 
@@ -166,7 +167,7 @@ class Command(BaseCommand):
   def _ghost_rolls(self):
     print RIGHT_NOW
     # Pull all rolls that have a present status with no leave slips attached
-    rolls = Roll.objects.filter(status='P', finalized=false).order_by('date')
+    rolls = Roll.objects.filter(status='P', finalized=False).order_by('date')
     output = '{0}: {1}-- Submitted by: {2}\n'
     output2 = 'For Roll {0}: Possible Slip: {1} [ID: {2}]\n'
     ghost_rolls = []
@@ -191,8 +192,8 @@ class Command(BaseCommand):
 
       except Exception as e:
         print output.format(r.id, e, r.submitted_by)
-    print 'ghost rolls: ' + str(len(ghost_rolls)) + '\n'
-    print 'self inputted rolls: ' + str(len(self_inputted)) + '\n'
+    print 'ghost rolls: ' + str(len(ghost_rolls))
+    print 'self inputted rolls: ' + str(len(self_inputted))
 
   file_name = '../mislink_leaveslips' + RIGHT_NOW + '.txt'
 
@@ -247,14 +248,6 @@ class Command(BaseCommand):
             invalid_duplicates = True
             duplicate_rolls.append(dup)
             two_rolls.append(dup)
-          else:
-            if dup.filter(submitted_by=t).count() == 1 and dup.filter(submitted_by__in=AMs).count() == 1:
-              pass
-            else:
-              invalid_duplicates = True
-              duplicate_rolls.append(dup)
-              two_rolls.append(dup)
-
         elif dup.count() > 2:
           invalid_duplicates = True
           duplicate_rolls.append(dup)
@@ -264,15 +257,15 @@ class Command(BaseCommand):
         print t.full_name2
         trainees_with_duplicates.append(t)
         for qs in duplicate_rolls:
-          print output.format(str(r.id), r, r.submitted_by, r.last_modified)
+          for r in qs:
+            print output.format(str(r.id), r, r.submitted_by, r.last_modified)
 
         print '\n'
 
-    print 'sets of duplicate rolls: ' + str(len(two_rolls) + len(three_rolls)) + '\n'
-    print 'two rolls: ' + str(len(two_rolls)) + '\n'
-    print 'three rolls: ' + str(len(three_rolls)) + '\n'
-    print 'trainees duplicate rolls: ' + str(len(trainees_with_duplicates)) + '\n'
-    # print 'fixed rolls: ' + str(fixed) + '\n'
+    print 'sets of duplicate rolls: ' + str(len(two_rolls) + len(three_rolls))
+    print 'two rolls: ' + str(len(two_rolls))
+    print 'three rolls: ' + str(len(three_rolls))
+    print 'trainees duplicate rolls: ' + str(len(trainees_with_duplicates))
 
   def handle(self, *args, **options):
     allcmd = False
