@@ -77,5 +77,7 @@ class XBApplicationDetails(DetailView):
     ctx['object'] = self.model.objects.filter(pk=obj.id).values()[0]
     ctx['trainee'] = obj.trainee
     ctx['term'] = obj.xb_admin.term.next_term
-    ctx['narrative_wc'] = len(obj.narrative.split(" "))
+    ctx['narrative_wc'] = 0
+    if obj.narrative is not None and obj.narrative != "":
+      ctx['narrative_wc'] = len(obj.narrative.split(" "))
     return ctx
