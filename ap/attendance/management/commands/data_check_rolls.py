@@ -166,10 +166,11 @@ class Command(BaseCommand):
   def _ghost_rolls(self):
     print RIGHT_NOW
     # Pull all rolls that have a present status with no leave slips attached
-    rolls = Roll.objects.filter(status='P').order_by('date')
+    rolls = Roll.objects.filter(status='P', finalized=false).order_by('date')
     output = '{0}: {1}-- Submitted by: {2}\n'
     output2 = 'For Roll {0}: Possible Slip: {1} [ID: {2}]\n'
     ghost_rolls = []
+    self_inputted = []
 
     def find_possible_slips(roll):
       # check to see if there's a leaveslip submitted by the trainee for other rolls or events on the date that this roll takes place
@@ -184,9 +185,14 @@ class Command(BaseCommand):
           for s in find_possible_slips(r):
             print output2.format(r.id, s, s.id)
             print '\n'
+
+          if r.submitted_by == r.trainee:
+            self_inputted.append(r)
+
       except Exception as e:
         print output.format(r.id, e, r.submitted_by)
     print 'ghost rolls: ' + str(len(ghost_rolls)) + '\n'
+    print 'self inputted rolls: ' + str(len(self_inputted)) + '\n'
 
   file_name = '../mislink_leaveslips' + RIGHT_NOW + '.txt'
 
@@ -215,10 +221,19 @@ class Command(BaseCommand):
         print output.format(slip, '!', e, '!')
     print 'bad slips: ' + str(len(bad_slips)) + '\n'
 
+  file_name = '../invalid_duplicates' + RIGHT_NOW + '.txt'
 
   # @open_file(file_name)
   def _invalid_duplicatrolls(self):
     print RIGHT_NOW
+    # Pull all rolls that have an invalid duplicate, if the trainee is not self attendance, there should only be a maximum
+    # of one roll, if the trainee is on self attendance, there should only be a maximum of two rolls with one submitted
+    # by the trainee and the other by someone that's not the trainee
+
+    output = 'Roll ID {0} {1} submitted_by {2} on {3}'
+    two_rolls = []
+    three_rolls = []
+    trainees_with_duplicates = []
 
     AMs = User.objects.filter(groups__name__in='attendance_monitors')
     for t in Trainee.objects.all().order_by('lastname', 'firstname'):
@@ -232,23 +247,34 @@ class Command(BaseCommand):
           if not t.self_attendance:
             invalid_duplicates = True
             duplicate_rolls.append(dup)
+            two_rolls.append(dup)
           else:
             if dup.filter(submitted_by=t).count() == 1 and dup.filter(submitted_by__in=AMs).count() == 1:
               pass
             else:
               invalid_duplicates = True
               duplicate_rolls.append(dup)
+              two_rolls.append(dup)
         elif dup.count() > 2:
           invalid_duplicates = True
           duplicate_rolls.append(dup)
+          three_rolls.append(dup)
 
 
       if invalid_duplicates:
         print t.full_name2
+        trainees_with_duplicates.append(t)
         for qs in duplicate_rolls:
           for r in qs:
             print "Roll ID", r.id, r, "submitted by", r.submitted_by
         print '\n'
+
+
+    print 'sets of duplicate rolls: ' + str(len(two_rolls) + len(three_rolls)) + '\n'
+    print 'two rolls: ' + str(len(two_rolls)) + '\n'
+    print 'three rolls: ' + str(len(three_rolls)) + '\n'
+    print 'trainees duplicate rolls: ' + str(len(trainees_with_duplicates)) + '\n'
+
 
   def handle(self, *args, **options):
     allcmd = False
