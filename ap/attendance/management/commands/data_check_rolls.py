@@ -236,15 +236,14 @@ class Command(BaseCommand):
     trainees_with_duplicates = []
 
     AMs = User.objects.filter(groups__name__in='attendance_monitors')
-    for t in Trainee.objects.all().order_by('lastname', 'firstname'):
+    for t in Trainee.objects.filter(self_attendance=False).order_by('lastname', 'firstname'):
       invalid_duplicates = False
       duplicate_rolls = []
       trainee_rolls = Roll.objects.filter(trainee=t).order_by('date', 'event').distinct('date', 'event')
       for roll in trainee_rolls:
-        dup = Roll.objects.filter(trainee=t, event=roll.event, date=roll.date,)
+        dup = Roll.objects.filter(trainee=t, event=roll.event, date=roll.date).order_by('last_modified')
         
         if dup.count() == 2:
-          if not t.self_attendance:
             invalid_duplicates = True
             duplicate_rolls.append(dup)
             two_rolls.append(dup)
@@ -255,26 +254,25 @@ class Command(BaseCommand):
               invalid_duplicates = True
               duplicate_rolls.append(dup)
               two_rolls.append(dup)
+
         elif dup.count() > 2:
           invalid_duplicates = True
           duplicate_rolls.append(dup)
           three_rolls.append(dup)
 
-
       if invalid_duplicates:
         print t.full_name2
         trainees_with_duplicates.append(t)
         for qs in duplicate_rolls:
-          for r in qs:
-            print "Roll ID", r.id, r, "submitted by", r.submitted_by
-        print '\n'
+          print output.format(str(r.id), r, r.submitted_by, r.last_modified)
 
+        print '\n'
 
     print 'sets of duplicate rolls: ' + str(len(two_rolls) + len(three_rolls)) + '\n'
     print 'two rolls: ' + str(len(two_rolls)) + '\n'
     print 'three rolls: ' + str(len(three_rolls)) + '\n'
     print 'trainees duplicate rolls: ' + str(len(trainees_with_duplicates)) + '\n'
-
+    # print 'fixed rolls: ' + str(fixed) + '\n'
 
   def handle(self, *args, **options):
     allcmd = False
