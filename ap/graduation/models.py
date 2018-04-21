@@ -115,6 +115,9 @@ class Survey(models.Model):
   def __unicode__(self):
     return "[%s] %s - %s" % (self.name_of_model, self.due_date, self.show_status)
 
+  def menu_title(self):
+    return self.name_of_model.title()
+
   class Meta:
     abstract = True
 
@@ -252,3 +255,6 @@ class Misc(Survey):
       return True
     else:
       return False
+
+  def menu_title(self):
+    return "Invites & DVDs"

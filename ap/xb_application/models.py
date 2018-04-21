@@ -191,3 +191,6 @@ class XBApplication(models.Model):
   @property
   def name_of_model(self):
     return self.__class__.__name__
+
+  def menu_title(self):
+    return "XB Application"
