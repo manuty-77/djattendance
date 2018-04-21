@@ -155,9 +155,8 @@ class Command(BaseCommand):
     AMs = Trainee.objects.filter(groups__name__in='attendance_monitors')
     print '------------ For Attendanece Monitros ----------'
     for am in AMS:
-      print am.full_name2
-      for r in Roll.objects.filter(id__in=[r.id for r in bad_rolls]):
-        print "Rolld ID", r.id, r, "submitted by", r.submitted_by, "on", r.last_modified
+      for r in [r for r in bad_rolls if r.submitted_by==am]:
+        print "Roll ID", r.id, r, "submitted by", r.submitted_by, "on", r.last_modified
 
       print '\n'
 
