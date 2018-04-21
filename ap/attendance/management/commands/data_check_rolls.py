@@ -151,6 +151,15 @@ class Command(BaseCommand):
     print '--------------- Error Rolls -------------'
     for er in error_rolls:
       print str(er.id) + ' ' + str(er.trainee) + ' ' + str(er.event) + ' ' + str(er.date) + ' ' + str(er.submitted_by) + ' ' + str(er.status) + ' ' + str(er.last_modified)
+    
+    AMs = Trainee.objects.filter(groups__name__in='attendance_monitors')
+    print '------------ For Attendanece Monitros ----------'
+    for am in AMS:
+      print am.full_name2
+      for r in Roll.objects.filter(id__in=[r.id for r in bad_rolls]):
+        print "Rolld ID", r.id, r, "submitted by", r.submitted_by, "on", r.last_modified
+
+      print '\n'
 
   file_name = '../ghost_rolls' + RIGHT_NOW + '.txt'
 
