@@ -111,6 +111,21 @@ $(document).ready(() => {
   <div class="panel">
     <h4>Contact Information:</h4>
     <p>Please verify that your contact information is up to date.</p><br>
+
+    <div class="row">
+      <div class="col-md-2">
+        First Name:
+      </div>
+      <div class="col-md-4">
+        <strong>{{request.user.firstname}}</strong>
+      </div>
+      <div class="col-md-2">
+        Last Name:
+      </div>
+      <div class="col-md-4">
+        <strong>{{request.user.lastname}}</strong>
+      </div>
+    </div>
     <div class="row">
       <div class="col-md-2">
         {{form.cell_phone.label}}:

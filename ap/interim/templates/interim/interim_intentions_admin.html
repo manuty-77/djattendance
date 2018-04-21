@@ -32,8 +32,8 @@
 <form id='id_interim_admin_form' action="" method="post">
   {% csrf_token %}
 
-  {% bootstrap_form form %}  
-
+  {% bootstrap_form form %}
+  
   <button type="submit" class="btn btn-primary btn-save" id="submit">{{button_label|safe}}</button>
 </form>
 
