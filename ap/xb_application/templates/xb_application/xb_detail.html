@@ -152,7 +152,7 @@
       Other: {{object.support_other_explain}}
     {% endif %}
   </dd>
-  {% if object.pertinent_info is not None %}
+  {% if object.pertinent_info != "" and object.pertinent_info is not None %}
     <dt>Other Pertinent Info</dt>
     <dd>{{object.pertinent_info}}</dd>
   {% endif %}

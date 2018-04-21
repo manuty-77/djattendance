@@ -62,7 +62,7 @@ class XBReportView(ListView):
 
   def get_context_data(self, **kwargs):
     ctx = super(XBReportView, self).get_context_data(**kwargs)
-    ctx['trainees'] = self.model.objects.filter(trainee__current_term=4)
+    ctx['trainees'] = self.model.objects.filter(trainee__current_term=4, last_updated__isnull=False)
     ctx['page_title'] = 'FTTA-XB Application Report List'
     return ctx
 
