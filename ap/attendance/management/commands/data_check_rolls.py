@@ -238,6 +238,7 @@ class Command(BaseCommand):
 
     AMs = User.objects.filter(groups__name__in='attendance_monitors')
     for t in Trainee.objects.filter(self_attendance=False).order_by('lastname', 'firstname'):
+
       invalid_duplicates = False
       duplicate_rolls = []
       trainee_rolls = Roll.objects.filter(trainee=t).order_by('date', 'event').distinct('date', 'event')
@@ -245,9 +246,9 @@ class Command(BaseCommand):
         dup = Roll.objects.filter(trainee=t, event=roll.event, date=roll.date).order_by('last_modified')
         
         if dup.count() == 2:
-            invalid_duplicates = True
-            duplicate_rolls.append(dup)
-            two_rolls.append(dup)
+          invalid_duplicates = True
+          duplicate_rolls.append(dup)
+          two_rolls.append(dup)
         elif dup.count() > 2:
           invalid_duplicates = True
           duplicate_rolls.append(dup)
