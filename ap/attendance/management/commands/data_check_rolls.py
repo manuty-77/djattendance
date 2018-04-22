@@ -11,6 +11,7 @@ from django.db.models import Q
 import sys
 from contextlib import contextmanager
 
+AMs = Trainee.objects.filter(groups__name__in='attendance_monitors')
 
 @contextmanager
 def stdout_redirected(new_stdout):
@@ -151,8 +152,7 @@ class Command(BaseCommand):
     print '--------------- Error Rolls -------------'
     for er in error_rolls:
       print str(er.id) + ' ' + str(er.trainee) + ' ' + str(er.event) + ' ' + str(er.date) + ' ' + str(er.submitted_by) + ' ' + str(er.status) + ' ' + str(er.last_modified)
-    
-    AMs = Trainee.objects.filter(groups__name='attendance_monitors')
+        
     print '------------ For Attendanece Monitros ----------'
     for am in AMs:
       print am
@@ -172,6 +172,7 @@ class Command(BaseCommand):
     output2 = 'For Roll {0}: Possible Slip: {1} [ID: {2}]\n'
     ghost_rolls = []
     self_inputted = []
+    am_inputted = []
 
     def find_possible_slips(roll):
       # check to see if there's a leaveslip submitted by the trainee for other rolls or events on the date that this roll takes place
@@ -190,10 +191,14 @@ class Command(BaseCommand):
           if r.submitted_by == r.trainee:
             self_inputted.append(r)
 
+          if r.submitted_by in AMs:
+            am_inputted.append(r)
+
       except Exception as e:
         print output.format(r.id, e, r.submitted_by)
     print 'ghost rolls: ' + str(len(ghost_rolls))
     print 'self inputted rolls: ' + str(len(self_inputted))
+    print 'attendance monitor inputted rolls: ' + str(len(am_inputted))
 
   file_name = '../mislink_leaveslips' + RIGHT_NOW + '.txt'
 
@@ -236,7 +241,6 @@ class Command(BaseCommand):
     three_rolls = []
     trainees_with_duplicates = []
 
-    AMs = User.objects.filter(groups__name__in='attendance_monitors')
     for t in Trainee.objects.filter(self_attendance=False).order_by('lastname', 'firstname'):
       invalid_duplicates = False
       duplicate_rolls = []
