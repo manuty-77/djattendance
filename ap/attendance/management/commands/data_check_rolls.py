@@ -11,7 +11,7 @@ from django.db.models import Q
 import sys
 from contextlib import contextmanager
 
-AMs = Trainee.objects.filter(groups__name__in='attendance_monitors')
+AMs = Trainee.objects.filter(groups__name='attendance_monitors')
 
 @contextmanager
 def stdout_redirected(new_stdout):
@@ -238,6 +238,7 @@ class Command(BaseCommand):
 
     output = 'Roll ID {0} {1} submitted_by {2} on {3}'
     two_rolls = []
+    two_am_rolls = []
     three_rolls = []
     trainees_with_duplicates = []
 
@@ -249,9 +250,9 @@ class Command(BaseCommand):
         dup = Roll.objects.filter(trainee=t, event=roll.event, date=roll.date).order_by('last_modified')
         
         if dup.count() == 2:
-            invalid_duplicates = True
-            duplicate_rolls.append(dup)
-            two_rolls.append(dup)
+          invalid_duplicates = True
+          duplicate_rolls.append(dup)
+          two_rolls.append(dup)
         elif dup.count() > 2:
           invalid_duplicates = True
           duplicate_rolls.append(dup)
@@ -266,8 +267,11 @@ class Command(BaseCommand):
 
         print '\n'
 
+    two_am_rolls = [qs for qs in two_rolls if qs.filter(submitted_by__in=AMs).count() == 2]
+
     print 'sets of duplicate rolls: ' + str(len(two_rolls) + len(three_rolls))
     print 'two rolls: ' + str(len(two_rolls))
+    print 'two rolls both submitted by attendance monitors: ' + str(len(two_am_rolls))
     print 'three rolls: ' + str(len(three_rolls))
     print 'trainees duplicate rolls: ' + str(len(trainees_with_duplicates))
 
