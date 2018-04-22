@@ -243,6 +243,7 @@ class Command(BaseCommand):
     trainees_with_duplicates = []
 
     for t in Trainee.objects.filter(self_attendance=False).order_by('lastname', 'firstname'):
+
       invalid_duplicates = False
       duplicate_rolls = []
       trainee_rolls = Roll.objects.filter(trainee=t).order_by('date', 'event').distinct('date', 'event')
