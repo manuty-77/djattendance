@@ -193,7 +193,7 @@ class Command(BaseCommand):
           if r.submitted_by in AMs:
             am_inputted.append(r)
 
-            except Exception as e:
+      except Exception as e:
         print output.format(r.id, e, r.submitted_by)
     print 'ghost rolls: ' + str(len(ghost_rolls))
     print 'self inputted rolls: ' + str(len(self_inputted))
