@@ -10,14 +10,27 @@ from braces.views import GroupRequiredMixin
 from dateutil import parser
 from datetime import datetime, timedelta
 
+
 class InterimIntentionsView(UpdateView):
   model = InterimIntentions
   template_name = 'interim/interim_intentions.html'
   form_class = InterimIntentionsForm
 
   def get_object(self, queryset=None):
+    trainee = trainee_from_user(self.request.user)
     admin, created = InterimIntentionsAdmin.objects.get_or_create(term=Term.current_term())
     int_int, created = InterimIntentions.objects.get_or_create(trainee=trainee_from_user(self.request.user), admin=admin)
+
+    if created:
+      int_int.email = trainee.email
+      int_int.cell_phone = trainee.meta.phone
+      int_int.home_locality = trainee.locality.city.name
+      int_int.home_address = trainee.meta.address.address1
+      int_int.home_city = trainee.meta.address.city.name
+      int_int.home_state = trainee.meta.address.city.state
+      int_int.home_zip = trainee.meta.address.zip_code
+      int_int.save()
+
     return int_int
 
   def form_valid(self, form):

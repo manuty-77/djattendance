@@ -2,6 +2,7 @@ from django import forms
 
 from interim.models import InterimIntentions, InterimItinerary, InterimIntentionsAdmin
 from aputils.widgets import DatePicker, DatetimePicker
+from aputils.trainee_utils import is_trainee
 
 
 class InterimItineraryForm(forms.ModelForm):
