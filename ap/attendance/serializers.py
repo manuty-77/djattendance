@@ -61,7 +61,7 @@ class RollSerializer(BulkSerializerMixin, ModelSerializer):
       else:
         r = roll_override.filter(~Q(submitted_by=submitted_by)).first()
 
-      if r.status != status:
+      if r and r.status != status:
         r.status = status
         r.submitted_by = self.context['request'].user
         r.last_modified = datetime.now()
