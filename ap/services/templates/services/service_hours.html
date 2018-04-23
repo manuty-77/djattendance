@@ -31,10 +31,14 @@
 $(document).ready(() => {
 
   const size = 10;
+  var dt_options = {
+    format:'m/d/Y h:i a',
+    formatTime: 'g:i A',
+    ampm: true,
+    step: 10
+  }
 
-  $('.datetimepicker').datetimepicker({
-    format:'m/d/Y H:i'
-  });
+  $('.datetimepicker').datetimepicker(dt_options);
 
   $("#add_row").click(() => {
     let val = parseInt($("#id_service_hours_table tr:last").attr('id').split("_").pop());
@@ -43,9 +47,7 @@ $(document).ready(() => {
       $("#id_service_hours_table tr:last").clone().appendTo("#id_service_hours_table");
       val++;
       $("#id_service_hours_table tr:last").attr("id","row_" + val);
-      $('.datetimepicker').datetimepicker({
-        format:'m/d/Y H:i'
-      });
+      $('.datetimepicker').datetimepicker(dt_options);
     }
   })
 
@@ -119,12 +121,14 @@ Note: 12:00 AM will be interpreted as 00:00 in 24 hour time. Rows with blank hou
       <th>Start</th>
       <th>End</th>
       <th>Task Performed</th>
+      <th>Work Hours</th>
     </tr>
     {% for service_roll_form in service_roll_forms %}
     <tr id="row_{{forloop.counter0}}">
-      <td>{{service_roll_form.start_datetime}}</td>
-      <td>{{service_roll_form.end_datetime}}</td>
+      <td><input type="datetime-local" class="datetimepicker" id="id_start_datetime" name="start_datetime" value="{{service_roll_form.start_datetime.value|date:'m/d/Y g:i a'}}"></td>
+      <td><input type="datetime-local" class="datetimepicker" id="id_end_datetime" name="end_datetime" value="{{service_roll_form.end_datetime.value|date:'m/d/Y g:i a'}}"></td>
       <td>{{service_roll_form.task_performed}}</td>
+      <td>{{service_roll_form.instance.get_time_diff|floatformat:2}}</td>
     </tr>
     {% endfor %}
     </table>

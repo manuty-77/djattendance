@@ -39,3 +39,6 @@ class ServiceRoll(models.Model):
   end_datetime = models.DateTimeField(null=True, blank=True)
 
   task_performed = models.CharField(max_length=140, blank=True)
+
+  def get_time_diff(self):
+    return (self.end_datetime - self.start_datetime).seconds / 3600.0
