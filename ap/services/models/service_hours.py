@@ -41,4 +41,7 @@ class ServiceRoll(models.Model):
   task_performed = models.CharField(max_length=140, blank=True)
 
   def get_time_diff(self):
-    return (self.end_datetime - self.start_datetime).seconds / 3600.0
+    try:
+      return (self.end_datetime - self.start_datetime).seconds / 3600.0
+    except Exception:
+      return 0.0
