@@ -6,7 +6,23 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block scripts %}
-{{ form.media }}
+<script type="text/javascript">
+  $(document).ready(() => {
+    var datetime_options = {
+      format:'m/d/Y g:i a',
+      formatTime: 'g:i A',
+      ampm: true,
+      step: 30
+    };
+    var date_options = {
+      dateonly: true,
+      minView: 2,
+      format: 'm/d/Y'
+    };
+    $('.datetimepicker').datetimepicker(datetime_options);
+    $('.datepicker').datepicker();
+  });
+</script>
 {% endblock %}
 
 {% block content %}
@@ -32,8 +48,54 @@
 <form id='id_interim_admin_form' action="" method="post">
   {% csrf_token %}
 
-  {% bootstrap_form form %}
-  
+  <div class="row">
+    <div class="col-md-2">
+      {{form.open_time.label_tag}}
+    </div>
+    <div class="col-md-10">
+      <input type="datetime-local" class="datetimepicker" id="id_open_time" name="open_time" value="{{form.open_time.value|date:'m/d/Y g:i a'}}">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+      {{form.close_time.label_tag}}
+    </div>
+    <div class="col-md-10">
+      <input type="datetime-local" class="datetimepicker" id="id_close_time" name="close_time" value="{{form.close_time.value|date:'m/d/Y g:i a'}}">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+      {{form.date_1yr_return.label_tag}}
+    </div>
+    <div class="col-md-10">
+      <input type="datetime-local" class="datetimepicker" id="id_date_1yr_return" name="date_1yr_return" value="{{form.date_1yr_return.value|date:'m/d/Y g:i a'}}">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+      {{form.date_2yr_return.label_tag}}
+    </div>
+    <div class="col-md-10">
+      <input type="datetime-local" class="datetimepicker" id="id_date_2yr_return" name="date_2yr_return" value="{{form.date_2yr_return.value|date:'m/d/Y g:i a'}}">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+      {{form.earliest_arrival_date.label_tag}}
+    </div>
+    <div class="col-md-10">
+      <input type="datetime-local" class="datepicker" id="id_earliest_arrival_date" name="earliest_arrival_date" value="{{form.earliest_arrival_date.value|date:'m/d/Y'}}">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+      {{form.term_begin_date.label_tag}}
+    </div>
+    <div class="col-md-10">
+      <input type="datetime-local" class="datepicker" id="id_term_begin_date" name="term_begin_date" value="{{form.term_begin_date.value|date:'m/d/Y'}}">
+    </div>
+  </div>  
   <button type="submit" class="btn btn-primary btn-save" id="submit">{{button_label|safe}}</button>
 </form>
 
