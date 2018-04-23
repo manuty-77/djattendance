@@ -64,9 +64,3 @@ class InterimIntentionsAdminForm(forms.ModelForm):
       "earliest_arrival_date": DatePicker(),
       "term_begin_date": DatePicker()
     }
-
-# {{ bootstrap_field form.close_time|date:'m/d/Y H:i' }}
-#   {{ bootstrap_field form.date_1yr_return|date:'m/d/Y H:i' }}
-#   {{ bootstrap_field form.date_1yr_return|date:'m/d/Y H:i' }}
-#   {{ bootstrap_field form.earliest_arrival_date|date:'m/d/Y' }}
-#   {{ bootstrap_field form.term_begin_date|date:'m/d/Y' }}

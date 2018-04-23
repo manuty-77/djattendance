@@ -49,7 +49,8 @@ $(document).ready(() => {
   if ($("#id_start").val() == 0){
     $("#id_start").val(interim_start);
   }
-  $("#id_start").prop( "disabled", true );
+  $("#id_start").prop( "readonly", true );
+  $('#id_start').css('background-color' , '#DEDEDE');
 
   function show_hide_comments(){
     if($('#id_intent_1').is(':checked')) {
