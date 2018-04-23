@@ -55,11 +55,11 @@ class InterimIntentionsView(UpdateView):
     ctx = super(InterimIntentionsView, self).get_context_data(**kwargs)
     admin, created = InterimIntentionsAdmin.objects.get_or_create(term=Term.current_term())
     interim_itineraries_forms = []
-    interim_itineraries = InterimItinerary.objects.filter(interim_intentions=self.get_object())
+    interim_itineraries = InterimItinerary.objects.filter(interim_intentions=self.get_object()).order_by('start')
     if interim_itineraries.count() == 0:
       interim_itineraries_forms.append(InterimItineraryForm())
     else:
-      for itin in InterimItinerary.objects.filter(interim_intentions=self.get_object()):
+      for itin in interim_itineraries:
         interim_itineraries_forms.append(InterimItineraryForm(instance=itin))
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Interim Intentions'

@@ -23,6 +23,10 @@
     float: right;
   }
 
+  .readonly{
+    background-color: #DEDEDE;
+  }
+
 </style>
 
 <script type="text/javascript">
@@ -34,7 +38,7 @@ $(document).ready(() => {
   
   show_hide_comments();
 
-  $('.datepicker').datepicker();
+  $('.datepicker:odd').datepicker();
 
   $("#add_row").click(add_row);
 
@@ -46,11 +50,15 @@ $(document).ready(() => {
 
   $('input[type=radio][name=intent]').change(show_hide_comments);
 
-  if ($("#id_start").val() == 0){
+  if ($("#id_start").val() == 0) {
     $("#id_start").val(interim_start);
+    let dt = new Date(interim_start);
+    console.log(dt.toLocaleDateString());
+    dt.setDate(dt.getDate() + 1);
+    $("#id_end").val(dt.toLocaleDateString());
   }
-  $("#id_start").prop( "readonly", true );
-  $('#id_start').css('background-color' , '#DEDEDE');
+  $("[name='start']").prop( "readonly", true );
+  $("[name='start']").addClass('readonly');
 
   function show_hide_comments(){
     if($('#id_intent_1').is(':checked')) {
@@ -67,10 +75,15 @@ $(document).ready(() => {
     let val = parseInt($("#id_itinerary_table tr:last").attr('id').split("_").pop());
 
     if (val < size) {
-      $("#id_itinerary_table tr:last").clone().appendTo("#id_itinerary_table");
+      let dt = new Date($("#id_itinerary_table tr:last #id_end").val());
+      $("#id_itinerary_table tr:last").clone().appendTo("#id_itinerary_table")
       val++;
       $("#id_itinerary_table tr:last").attr("id","row_" + val);
-      $('.datepicker').datepicker();
+      dt.setDate(dt.getDate() + 1);
+      $("#id_itinerary_table tr:last #id_start").val(dt.toLocaleDateString());
+      dt.setDate(dt.getDate() + 1);
+      $("#id_itinerary_table tr:last #id_end").val(dt.toLocaleDateString());
+      $('.datepicker:odd').datepicker();
     }
   }
 
