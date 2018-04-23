@@ -153,10 +153,12 @@ class Command(BaseCommand):
     for er in error_rolls:
       print str(er.id) + ' ' + str(er.trainee) + ' ' + str(er.event) + ' ' + str(er.date) + ' ' + str(er.submitted_by) + ' ' + str(er.status) + ' ' + str(er.last_modified)
 
+    print '\n'
     print '------------ For Attendanece Monitros ----------'
-    for am in AMs:
-      print am
-      for r in [r for r in bad_rolls if r.submitted_by==am]:
+    am_reconcile = [r for r in bad_rolls if r.status != 'P']
+    for t in list(set(am_reconcile)):
+      print t
+      for r in [r for r in am_reconcile if r.trainee == t]:
         print "Roll ID", r.id, r, "submitted by", r.submitted_by, "on", r.last_modified
 
       print '\n'
@@ -257,7 +259,7 @@ class Command(BaseCommand):
           three_rolls.append(dup)
 
       if invalid_duplicates:
-        print t.full_name2
+        print t
         trainees_with_duplicates.append(t)
         for qs in duplicate_rolls:
           for r in qs:
