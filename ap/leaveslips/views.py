@@ -11,11 +11,12 @@ from rest_framework import filters
 from rest_framework_bulk import BulkModelViewSet
 from rest_framework.renderers import JSONRenderer
 from braces.views import GroupRequiredMixin
+from datetime import *
 
 from .models import IndividualSlip, GroupSlip, LeaveSlip
 from .forms import IndividualSlipForm, GroupSlipForm
 from .serializers import IndividualSlipSerializer, IndividualSlipFilter, GroupSlipSerializer, GroupSlipFilter
-from accounts.models import TrainingAssistant, Statistics
+from accounts.models import TrainingAssistant, Statistics, Trainee
 from attendance.views import react_attendance_context
 from aputils.utils import modify_model_status
 from aputils.decorators import group_required
@@ -43,6 +44,13 @@ class IndividualSlipUpdate(LeaveSlipUpdate):
 
   def get_context_data(self, **kwargs):
     ctx = super(IndividualSlipUpdate, self).get_context_data(**kwargs)
+    if self.get_object().type in ['MEAL', 'NIGHT']:
+      IS_list = IndividualSlip.objects.filter(status='A', trainee=self.get_object().get_trainee_requester(), type=self.get_object().type).order_by('-submitted')
+      most_recent_IS = IS_list.first()
+      if most_recent_IS and most_recent_IS != self.get_object():
+        last_date = most_recent_IS.rolls.all().order_by('date').last().date
+        ctx['last_date'] = last_date
+        ctx['days_since'] = (self.get_object().rolls.first().date - last_date).days
     ctx['show'] = 'leaveslip'
     return ctx
 
@@ -93,27 +101,43 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     slip_setting = s.settings.get('leaveslip')
     selected_ta = slip_setting.get('selected_ta', self.request.user.id)
     status = slip_setting.get('selected_status', 'P')
+    selected_trainee = slip_setting.get('selected_trainee', Trainee.objects.first().id)
 
     if self.request.method == 'POST':
       selected_ta = int(self.request.POST.get('leaveslip_ta_list'))
       status = self.request.POST.get('leaveslip_status')
+      selected_trainee = self.request.POST.get('leaveslip_trainee_list')
     else:
       status = self.request.GET.get('status', status)
       selected_ta = self.request.GET.get('ta', selected_ta)
+      selected_trainee = self.request.GET.get('trainee')
 
     s.settings['leaveslip']['selected_ta'] = selected_ta
     s.settings['leaveslip']['selected_status'] = status
+    s.settings['leaveslip']['selected_trainee'] = selected_trainee
     s.save()
 
     ta = None
-    if selected_ta > 0:
+    if int(selected_ta) > 0:
       ta = TrainingAssistant.objects.filter(pk=selected_ta).first()
       individual = individual.filter(TA=ta)
       group = group.filter(TA=ta)
 
+    tr = None  # selected_trainee
+    if selected_trainee and int(selected_trainee) > 0:
+      tr = Trainee.objects.filter(pk=selected_trainee).first()
+      individual = individual.filter(trainee=tr)
+      group = group.filter(trainees__in=[tr])
+
+
     if status != "-1":
-      individual = individual.filter(status=status)
-      group = group.filter(status=status)
+      si_slips = IndividualSlip.objects.none()
+      sg_slips = GroupSlip.objects.none()
+      if status == 'P':
+        si_slips = individual.filter(status='S')
+        sg_slips = group.filter(status='S')
+      individual = individual.filter(status=status) | si_slips
+      group = group.filter(status=status) | sg_slips
 
     # Prefetch for performance
     individual.select_related('trainee', 'TA', 'TA_informed').prefetch_related('rolls')
@@ -122,9 +146,10 @@ class TALeaveSlipList(GroupRequiredMixin, generic.TemplateView):
     ctx['TA_list'] = TrainingAssistant.objects.filter(groups__name='training_assistant')
     ctx['leaveslips'] = chain(individual, group)  # combines two querysets
     ctx['selected_ta'] = ta
-    ctx['status_list'] = LeaveSlip.LS_STATUS
+    ctx['status_list'] = LeaveSlip.LS_STATUS[:-1]  # Removes Sister Approved Choice
     ctx['selected_status'] = status
-
+    ctx['selected_trainee'] = tr
+    ctx['trainee_list'] = Trainee.objects.all()
     return ctx
 
 
