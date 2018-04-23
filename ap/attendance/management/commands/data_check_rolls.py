@@ -155,10 +155,10 @@ class Command(BaseCommand):
 
     print '\n'
     print '------------ For Attendanece Monitros ----------'
-    am_reconcile = [r for r in bad_rolls if r.status != 'P']
+    am_reconcile = [r.trainee for r in bad_rolls if r.status != 'P']
     for t in list(set(am_reconcile)):
       print t
-      for r in [r for r in am_reconcile if r.trainee == t]:
+      for r in [r for r in bad_rolls if r.trainee == t]:
         print "Roll ID", r.id, r, "submitted by", r.submitted_by, "on", r.last_modified
 
       print '\n'
