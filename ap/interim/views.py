@@ -27,7 +27,7 @@ class InterimIntentionsView(UpdateView):
       int_int.home_locality = trainee.locality.city.name
       int_int.home_address = trainee.meta.address.address1
       int_int.home_city = trainee.meta.address.city.name
-      int_int.home_state = trainee.meta.address.city.state
+      int_int.home_state = trainee.meta.address.city.get_state_display()
       int_int.home_zip = trainee.meta.address.zip_code
       int_int.save()
 

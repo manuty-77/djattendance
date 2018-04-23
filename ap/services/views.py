@@ -1011,11 +1011,11 @@ class ServiceHours(GroupRequiredMixin, UpdateView):
     ctx['button_label'] = 'Submit'
     ctx['page_title'] = 'Designated Service Hours'
     service_roll_forms = []
-    service_rolls = ServiceRoll.objects.filter(service_attendance=self.get_object())
+    service_rolls = ServiceRoll.objects.filter(service_attendance=self.get_object()).order_by('start_datetime')
     if service_rolls.count() == 0:
       service_roll_forms.append(ServiceRollForm())
     else:
-      for sr in ServiceRoll.objects.filter(service_attendance=self.get_object()):
+      for sr in service_rolls:
         service_roll_forms.append(ServiceRollForm(instance=sr))
     ctx['service_roll_forms'] = service_roll_forms
     return ctx
